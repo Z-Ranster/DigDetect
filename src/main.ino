@@ -84,11 +84,13 @@ void loop() {
   dataValues[2] = checkEncoder3();
 
   // Convert data and build serial stream
-  for (int i = 0; i <= sizeof(dataValues); i++){
-    char tmpChr[6];
-    dtostrf(dataValues[i], 6, 3, tmpChr);
-    serialStream += "," + String(tmpChr);
-  }
+  Serial.println("TEST");
+  // Fix code below
+  //for (int i = 0; i <= sizeof(dataValues); i++){
+  //  char tmpChr[6];
+  //  dtostrf(dataValues[i], 6, 3, tmpChr);
+  //  serialStream += "," + String(tmpChr);
+  //}
 
   // Transmit Serial Data
   Serial.println(serialStream);
