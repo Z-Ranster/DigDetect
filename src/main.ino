@@ -19,17 +19,20 @@
 #define ledCW 8
 #define ledCCW 9 
 
-int counter1 = 0;
-int currentStateCLK1;
-int previousStateCLK1;
+// Update the 20 value to be the number of increments per 360 dgree rotation
+float angleIncrement = 360/40;
 
-int counter2 = 0;
-int currentStateCLK2; 
-int previousStateCLK2;
+float counter1 = 0;
+float currentStateCLK1;
+float previousStateCLK1;
 
-int counter3 = 0;
-int currentStateCLK3;
-int previousStateCLK3;
+float counter2 = 0;
+float currentStateCLK2; 
+float previousStateCLK2;
+
+float counter3 = 0;
+float currentStateCLK3;
+float previousStateCLK3;
 
 String encdir1 = "";
 String encdir2 = "";
@@ -94,9 +97,6 @@ void loop() {
 float checkEncoder1(){
   // Rotary Encoder 1
 
-  // The degree value of the rotary encoder
-  float degVal = 0.0;
-
   // Read the current state of inputCLK1
   currentStateCLK1 = digitalRead(inputCLK1);
 
@@ -107,16 +107,16 @@ float checkEncoder1(){
     // If the inputDT1 state is different than the inputCLK2 state then the encoder
     // is rotating clockwise
     if (digitalRead(inputDT1) != currentStateCLK1) {
-      counter1 ++;
-      encdir1 = "CW";
+      counter1 += counter1*angleIncrement;
+      //encdir1 = "CW";
       digitalWrite(ledCW, HIGH);
       digitalWrite(ledCCW, LOW);
 
     } else { 
 
       // Encoder is rotating counterclockwise
-      counter1 --;
-      encdir1 = "CCW";
+      counter1 -= counter1*angleIncrement;
+      //encdir1 = "CCW";
       digitalWrite(ledCW, LOW);
       digitalWrite(ledCCW, HIGH);
 
@@ -134,14 +134,11 @@ float checkEncoder1(){
   //Update previousStateCLK1 with the current state
   previousStateCLK1 = currentStateCLK1;
 
-  return degVal;
+  return counter1;
 }
 
 float checkEncoder2(){
   // Rotary Encoder 2
-
-  // The degree value of the rotary encoder
-  float degVal = 0.0;
 
   // Read the current state of inputCLK2
   currentStateCLK2 = digitalRead(inputCLK2);
@@ -153,16 +150,16 @@ float checkEncoder2(){
     // If the inputDT2 state is different than the inputCLK2 state then the encoder
     // is rotating clockwise
     if (digitalRead(inputDT2) != currentStateCLK2)  { 
-      counter2 ++;
-      encdir2 = "CW";
+      counter2 += counter2*angleIncrement;
+      //encdir2 = "CW";
       digitalWrite(ledCW, HIGH);
       digitalWrite(ledCCW, LOW);
 
     } else  {
 
       // Encoder is rotating counterclockwise
-      counter2 --;
-      encdir2 = "CCW";
+      counter2 -= counter2*angleIncrement;
+      //encdir2 = "CCW";
       digitalWrite(ledCW, LOW);
       digitalWrite(ledCCW, HIGH);
 
@@ -179,14 +176,11 @@ float checkEncoder2(){
   // Update previousStateCLK2 with the current state
   previousStateCLK2 = currentStateCLK2;
 
-  return degVal;
+  return counter2;
 }
 
 float checkEncoder3(){
   // Rotary Encoder 3
-
-  // The degree value of the rotary encoder
-  float degVal = 0.0;
 
   //Read the current state of inputCLK3
   currentStateCLK3 = digitalRead(inputCLK3);
@@ -198,16 +192,16 @@ float checkEncoder3(){
     // If the inputDT3 state is different than the inputCLK3 state then the encoder
     // is rotating clockwise
     if (digitalRead(inputDT3) != currentStateCLK3) {
-      counter3 ++;
-      encdir3 = "CW";
+      counter3 += counter3*angleIncrement;
+      //encdir3 = "CW";
       digitalWrite(ledCW, HIGH);
       digitalWrite(ledCCW, LOW);
 
     } else {
 
       //Encoder is rotating counterclockwise
-      counter3 --;
-      encdir3 = "CCW";
+      counter3 -= counter3*angleIncrement;
+      //encdir3 = "CCW";
       digitalWrite(ledCW, LOW);
       digitalWrite(ledCCW, HIGH);
 
@@ -224,5 +218,5 @@ float checkEncoder3(){
   //Update previousStateCLK3 with the current state
   previousStateCLK3 = currentStateCLK3;
 
-  return degVal;
+  return counter3;
 }
