@@ -1,8 +1,3 @@
-/*
-Rotary Encoder Demo
-Display results on a Serial Monitor 
-*/ 
-
 //Rotary Encoder inputs
 
 // Rotary Encoder 1 models Boom Cylinder (reference Parts of an Excavator Arm image)
@@ -41,7 +36,6 @@ String encdir2 = "";
 String encdir3 = "";
 
 void setup() {
-
   // Set encoder pins as inputs 
   // Encoder 1
   pinMode (inputCLK1, INPUT);
@@ -77,8 +71,31 @@ void setup() {
 }
 
 void loop() {
-  
+  // Initalize variables
+  String serialStream = "$DDT,";
+  float dataValues[6];
+
+  // Check sensors
+  dataValues[0] = checkEncoder1();
+  dataValues[1] = checkEncoder2();
+  dataValues[2] = checkEncoder3();
+
+  // Convert data and build serial stream
+  for (int i = 0; i <= sizeof(dataValues); i++){
+    char tmpChr[6];
+    dtostrf(dataValues[i], 6, 3, tmpChr);
+    serialStream += "," + String(tmpChr);
+  }
+
+  // Transmit Serial Data
+  Serial.println(serialStream);
+}
+
+float checkEncoder1(){
   // Rotary Encoder 1
+
+  // The degree value of the rotary encoder
+  float degVal = 0.0;
 
   // Read the current state of inputCLK1
   currentStateCLK1 = digitalRead(inputCLK1);
@@ -104,17 +121,27 @@ void loop() {
       digitalWrite(ledCCW, HIGH);
 
     }
+    // Removed to implement structured serial communication
+    /*
     Serial.print("Direction Encoder 1: ");
     Serial.print(encdir1);
     Serial.print(" -- Value: ");
     Serial.println(counter1);
     Serial.println();   //Prints an empty line
+    */
 
   }
   //Update previousStateCLK1 with the current state
   previousStateCLK1 = currentStateCLK1;
 
+  return degVal;
+}
+
+float checkEncoder2(){
   // Rotary Encoder 2
+
+  // The degree value of the rotary encoder
+  float degVal = 0.0;
 
   // Read the current state of inputCLK2
   currentStateCLK2 = digitalRead(inputCLK2);
@@ -140,16 +167,26 @@ void loop() {
       digitalWrite(ledCCW, HIGH);
 
     }
+    // Removed to implement structured serial communication
+    /*
     Serial.print("Direction Encoder 2: ");
     Serial.print(encdir2);
     Serial.print(" -- Value: ");
     Serial.println(counter2);    
     Serial.println();   // Prints an empty line
+    */
   }
   // Update previousStateCLK2 with the current state
   previousStateCLK2 = currentStateCLK2;
 
-  //Rotary Encoder 3
+  return degVal;
+}
+
+float checkEncoder3(){
+  // Rotary Encoder 3
+
+  // The degree value of the rotary encoder
+  float degVal = 0.0;
 
   //Read the current state of inputCLK3
   currentStateCLK3 = digitalRead(inputCLK3);
@@ -175,13 +212,17 @@ void loop() {
       digitalWrite(ledCCW, HIGH);
 
     }
+    // Removed to implement structured serial communication
+    /*
     Serial.print("Direction Encoder 3: ");
     Serial.print(encdir3);
     Serial.print(" -- Value: ");
     Serial.println(counter3);
     Serial.println();   //Prints an empty line
+    */
   }
   //Update previousStateCLK3 with the current state
   previousStateCLK3 = currentStateCLK3;
 
+  return degVal;
 }
