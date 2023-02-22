@@ -78,9 +78,9 @@ void loop() {
   float dataValues[6];
 
   // Check sensors
-  dataValues[0] = checkEncoder1();
-  dataValues[1] = checkEncoder2();
-  dataValues[2] = checkEncoder3();
+  dataValues[0] = -100;//checkEncoder1();
+  dataValues[1] = 150;//checkEncoder2();
+  dataValues[2] = 70;//checkEncoder3();
 
   // Convert data and build serial stream
   for (int i = 0; i < 3; i++){
