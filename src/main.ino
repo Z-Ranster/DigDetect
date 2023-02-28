@@ -75,17 +75,22 @@ void setup() {
 void loop() {
   // Initalize variables
   String serialStream = "\$DDT";
-  float dataValues[6];
+  String dataValues[9];
 
   // Check sensors
-  dataValues[0] = checkEncoder1();
-  dataValues[1] = checkEncoder2();
-  dataValues[2] = checkEncoder3();
-  //dataValues[3] = 
+  dataValues[0] = String(checkEncoder1(), 3);
+  dataValues[1] = String(checkEncoder2(), 3);
+  dataValues[2] = String(checkEncoder3(), 3);
+  dataValues[3] = "3546.12574";
+  dataValues[4] = "N";
+  dataValues[5] = "07840.59113";
+  dataValues[6] = "W";
+  dataValues[7] = "225736.00";
+  dataValues[8] = "A";
 
   // Convert data and build serial stream
-  for (int i = 0; i < 3; i++){
-    serialStream += "," + String(dataValues[i], 3);
+  for (int i = 0; i < 9; i++){
+    serialStream += "," + dataValues[i];//String(dataValues[i], 3);
   }
 
   // Transmit Serial Data
