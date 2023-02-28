@@ -4,6 +4,8 @@ import serial
 import serial.tools.list_ports
 import time
 
+# Idea is to implement https://github.com/petercorke/robotics-toolbox-python to model the excavator in space
+
 class App:
     def __init__(self, root):
         #setting title
@@ -135,9 +137,9 @@ class App:
             ser.open()
             print("Connected!")
         except serial.SerialException as e:
-            print(f"Error opening serial port: {e}")
+            print("Error opening serial port: {e}")
         except Exception as e:
-            print(f"Unknown error opening serial port: {e}")
+            print("Unknown error opening serial port: {e}")
 
     def btnClearSerial_command(self):
         print("Clear Serial")
@@ -147,9 +149,9 @@ class App:
             ser.close()
             print("Disconnected!")
         except serial.SerialException as e:
-            print(f"Error opening serial port: {e}")
+            print("Error opening serial port: {e}")
         except Exception as e:
-            print(f"Unknown error opening serial port: {e}")
+            print("Unknown error opening serial port: {e}")
 
     def on_close():
         print("Window is closing...")
