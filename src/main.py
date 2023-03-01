@@ -3,10 +3,12 @@ import tkinter.font as tkFont
 import serial
 import serial.tools.list_ports
 import time
+import tinyik as ik
+import numpy as np
+import threading
+import queue
 
-# Idea is to implement https://github.com/petercorke/robotics-toolbox-python to model the excavator in space
-
-class App:
+class App():
     def __init__(self, root):
         #setting title
         root.title("Dig Detect Desktop")
@@ -96,9 +98,9 @@ class App:
         btnClearSerial["font"] = ft
         btnClearSerial["fg"] = "#000000"
         btnClearSerial["justify"] = "center"
-        btnClearSerial["text"] = "Clear Serial"
+        btnClearSerial["text"] = "Visualize Bucket"
         btnClearSerial.place(x=20,y=140,width=100,height=30)
-        btnClearSerial["command"] = self.btnClearSerial_command
+        btnClearSerial["command"] = self.btnvisualizeBucket_command
 
         btnDisconnect=tk.Button(root)
         btnDisconnect["bg"] = "#f0f0f0"
@@ -141,7 +143,8 @@ class App:
         except Exception as e:
             print("Unknown error opening serial port: {e}")
 
-    def btnClearSerial_command(self):
+    def btnvisualizeBucket_command(self):
+        ik.visualize(excavator)
         print("Clear Serial")
 
     def btnDisconnect_command(self):
@@ -166,13 +169,34 @@ class App:
         current_time = time.strftime("%H:%M:%S")
         if ser.isOpen():
             # Read a line of serial input
-            line = ser.readline().strip()
+            line = ser.readline().strip().decode()
             # Do something with the input
             print(line)
+            # Split the input into a list
+            currentData = line.split(",")
+            if len(currentData) == 10:
+                a = float(currentData[1])
+                b = float(currentData[2])
+                c = float(currentData[3])
+                deg = [0,a,b,c]
+                excavator.angles = np.deg2rad(deg)
+                efLocation = excavator.fk.solve(np.deg2rad(deg))
+                print(efLocation)
 
         # Schedule the refreshTimer() method to be called again in 1 second
         self.root.after(10, self.refreshTimer)
 
+class processingThread(threading.Thread):
+    def __init__(self, q, chain):
+        threading.Thread.__init__(self)
+        self.q = q
+        self.chain = chain
+    
+    def run(self):
+
+        print(self.chain.fk.solve(np.deg2rad(deg)))
+        ik.visualize(self.chain)
+        queue.task_done()
 
 if __name__ == "__main__":
     # Serial Variables
@@ -180,9 +204,16 @@ if __name__ == "__main__":
     selected_SerialPort = ''
     ser = serial.Serial()
 
-    # Define tkinter Variables
+    # Kinematic Chain
+    excavator = ik.Actuator(
+            [[0, 0, 0.2], "z", [0.0, 0.0, .2], "y", [0.0, 0.0, 1],
+                "y", [0.0, 0.0, 1], "y", [0.0, 0.0, 0.5]]
+    )
+
+    # End Effector Location
+    efLocation = [0,0,0]
+
     root = tk.Tk()
     app = App(root)
-    
-    # Start Main Loops
     root.mainloop()
+

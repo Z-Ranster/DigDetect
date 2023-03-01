@@ -1,86 +1,106 @@
-//Rotary Encoder inputs
+#include <Arduino.h>
+#include <Encoder.h>
+#include <TinyGPSPlus.h>
+#include <SoftwareSerial.h>
 
+// Encoder Definitions
 // Rotary Encoder 1 models Boom Cylinder (reference Parts of an Excavator Arm image)
 //i.e. up and down (y-axis) motion
 #define inputCLK1 2
-#define inputDT1 3 //Pin 3 allows Pulse Width Modulation (PWM)
-
+#define inputDT1 4
 //Rotary Encoder 2 models Stick Cylinder (reference Parts of an Excavator Arm image)
 //i.e. forward and back (x-axis) motion
-#define inputCLK2 4
-#define inputDT2 5 //Pin 5 allows PWM
-
+#define inputCLK2 3
+#define inputDT2 5
 //Rotary Encoder 3 models Bucket Cylinder (reference Parts of an Excavator Arm image)
 //i.e. bucket angle (loading/dumping) use x-axis and y-axis on a 45 degree angle
+// Rotary encoder 3 is broken because we do not have enough interrupt pins on the Arduino Uno.
 #define inputCLK3 7
-#define inputDT3 6 //Pin 6 allows PWM
+#define inputDT3 6
+// Encoder Definition
+Encoder myEnc1(inputCLK1,inputDT1);
+Encoder myEnc2(inputCLK2,inputDT2);
+Encoder myEnc3(inputCLK3,inputDT3);
+// Encoder Variables
+float angleIncrement = 360/60;
+long previousStateCLK1 = -999;
+long previousStateCLK2 = -999;
+long previousStateCLK3 = -999;
 
 //LED Outputs
 #define ledCW 8
 #define ledCCW 9 
 
-float angleIncrement = 360/30;
+// GPS Definition
+TinyGPSPlus gps;
+// Software Serial Definition
+#define rxPin 10
+#define txPin 11
+// Set up a new SoftwareSerial object
+SoftwareSerial gpsSerial =  SoftwareSerial(rxPin, txPin);
+float lati, longi, alti;
 
-float counter1 = 0;
-float currentStateCLK1;
-float previousStateCLK1;
+// Function to check the encoder values
+long checkEncoder(Encoder encoderNum, long oldPosition, int encoderID){
+  long newPosition = encoderNum.read();
+  if (newPosition != oldPosition) {
+    if (newPosition < oldPosition) {
+      // CW
+      digitalWrite(ledCW, HIGH);
+      digitalWrite(ledCCW, LOW);
+    } else { 
+      // CCW
+      digitalWrite(ledCW, LOW);
+      digitalWrite(ledCCW, HIGH);
+    }
+    oldPosition = newPosition;
 
-float counter2 = 0;
-float currentStateCLK2; 
-float previousStateCLK2;
-
-float counter3 = 0;
-float currentStateCLK3;
-float previousStateCLK3;
-
-String encdir1 = "";
-String encdir2 = "";
-String encdir3 = "";
+    return oldPosition;
+  }
+}
 
 void setup() {
-  // Set encoder pins as inputs 
-  // Encoder 1
-  pinMode (inputCLK1, INPUT);
-  pinMode (inputDT1, INPUT);
-
-  // Encoder 2
-  pinMode (inputCLK2, INPUT);
-  pinMode (inputDT2, INPUT);
-
-  // Encoder 3
-  pinMode (inputCLK3, INPUT);
-  pinMode (inputDT3, INPUT);
-
   // Set LED pins as outputs
   pinMode (ledCW, OUTPUT);
   pinMode (ledCCW, OUTPUT);
 
+  // Define pin modes for TX and RX
+  pinMode(rxPin, INPUT);
+  pinMode(txPin, OUTPUT);
+
   // Setup Serial Monitor
-  Serial.begin (9600);
-
-  // Read the initial state of inputCLK1
-  // Assign to previousStateCLK1 variable
-  previousStateCLK1 = digitalRead(inputCLK1);
-
-  // Read the initial state of inputCLK2
-  // Assign to previousStateCLK2 variable
-  previousStateCLK2 = digitalRead(inputCLK2);
-
-  // Read the initial state of inputCLK3
-  //Assign to previousStateCLK3 variable
-  previousStateCLK3 = digitalRead(inputCLK3);
+  Serial.begin(9600);
+  gpsSerial.begin(9600);
 
 }
 
 void loop() {
   // Initalize variables
-  String serialStream = "\$DDT";
+  String serialStream = "$DDT";
   String dataValues[9];
 
-  // Check sensors
-  dataValues[0] = String(checkEncoder1(), 3);
-  dataValues[1] = String(checkEncoder2(), 3);
-  dataValues[2] = String(checkEncoder3(), 3);
+  // Check Sensors
+  previousStateCLK1 = checkEncoder(myEnc1, previousStateCLK1, 1);
+  previousStateCLK2 = checkEncoder(myEnc2, previousStateCLK2, 2);
+  previousStateCLK3 = checkEncoder(myEnc3, previousStateCLK3, 3);
+
+  //Serial.println(gpsSerial.read());
+
+  /*
+  gpsSerial.listen();
+  if (gpsSerial.available()){
+    Serial.println("ReadingSerial");
+    int s = gpsSerial.read();
+    if (gps.encode(s)){
+      //gps.f_get_position(&lati, &longi);
+    }
+  }
+  */
+
+  // Build Serial Data
+  dataValues[0] = previousStateCLK1*angleIncrement;
+  dataValues[1] = previousStateCLK2*angleIncrement;
+  dataValues[2] = previousStateCLK3*angleIncrement;
   dataValues[3] = "3546.12574";
   dataValues[4] = "N";
   dataValues[5] = "07840.59113";
@@ -90,135 +110,11 @@ void loop() {
 
   // Convert data and build serial stream
   for (int i = 0; i < 9; i++){
-    serialStream += "," + dataValues[i];//String(dataValues[i], 3);
+    serialStream += "," + dataValues[i];
   }
 
   // Transmit Serial Data
   Serial.println(serialStream);
-}
 
-float checkEncoder1(){
-  // Rotary Encoder 1
-
-  // Read the current state of inputCLK1
-  currentStateCLK1 = digitalRead(inputCLK1);
-
-  // If the previous and the current state of the inputCLK2 are different then a 
-  // pulse has occured
-  if (currentStateCLK1 != previousStateCLK1) { 
-
-    // If the inputDT1 state is different than the inputCLK2 state then the encoder
-    // is rotating clockwise
-    if (digitalRead(inputDT1) != currentStateCLK1) {
-      counter1 += angleIncrement;
-      //encdir1 = "CW";
-      digitalWrite(ledCW, HIGH);
-      digitalWrite(ledCCW, LOW);
-
-    } else { 
-
-      // Encoder is rotating counterclockwise
-      counter1 -= angleIncrement;
-      //encdir1 = "CCW";
-      digitalWrite(ledCW, LOW);
-      digitalWrite(ledCCW, HIGH);
-
-    }
-    // Removed to implement structured serial communication
-    /*
-    Serial.print("Direction Encoder 1: ");
-    Serial.print(encdir1);
-    Serial.print(" -- Value: ");
-    Serial.println(counter1);
-    Serial.println();   //Prints an empty line
-    */
-
-  }
-  //Update previousStateCLK1 with the current state
-  previousStateCLK1 = currentStateCLK1;
-  return counter1;
-}
-
-float checkEncoder2(){
-  // Rotary Encoder 2
-
-  // Read the current state of inputCLK2
-  currentStateCLK2 = digitalRead(inputCLK2);
-
-  // If the previous and the current state of the inputCLK2 are different then a 
-  // pulse has occured
-  if (currentStateCLK2 != previousStateCLK2)  {
-
-    // If the inputDT2 state is different than the inputCLK2 state then the encoder
-    // is rotating clockwise
-    if (digitalRead(inputDT2) != currentStateCLK2)  { 
-      counter2 += angleIncrement;
-      //encdir2 = "CW";
-      digitalWrite(ledCW, HIGH);
-      digitalWrite(ledCCW, LOW);
-
-    } else  {
-
-      // Encoder is rotating counterclockwise
-      counter2 -= angleIncrement;
-      //encdir2 = "CCW";
-      digitalWrite(ledCW, LOW);
-      digitalWrite(ledCCW, HIGH);
-
-    }
-    // Removed to implement structured serial communication
-    /*
-    Serial.print("Direction Encoder 2: ");
-    Serial.print(encdir2);
-    Serial.print(" -- Value: ");
-    Serial.println(counter2);    
-    Serial.println();   // Prints an empty line
-    */
-  }
-  // Update previousStateCLK2 with the current state
-  previousStateCLK2 = currentStateCLK2;
-
-  return counter2;
-}
-
-float checkEncoder3(){
-  // Rotary Encoder 3
-
-  //Read the current state of inputCLK3
-  currentStateCLK3 = digitalRead(inputCLK3);
-
-  // If the previous and the current state of the inputCLK3 are different then a 
-  // pulse has occured
-  if (currentStateCLK3 != previousStateCLK3) {
-
-    // If the inputDT3 state is different than the inputCLK3 state then the encoder
-    // is rotating clockwise
-    if (digitalRead(inputDT3) != currentStateCLK3) {
-      counter3 += angleIncrement;
-      //encdir3 = "CW";
-      digitalWrite(ledCW, HIGH);
-      digitalWrite(ledCCW, LOW);
-
-    } else {
-
-      //Encoder is rotating counterclockwise
-      counter3 -= angleIncrement;
-      //encdir3 = "CCW";
-      digitalWrite(ledCW, LOW);
-      digitalWrite(ledCCW, HIGH);
-
-    }
-    // Removed to implement structured serial communication
-    /*
-    Serial.print("Direction Encoder 3: ");
-    Serial.print(encdir3);
-    Serial.print(" -- Value: ");
-    Serial.println(counter3);
-    Serial.println();   //Prints an empty line
-    */
-  }
-  //Update previousStateCLK3 with the current state
-  previousStateCLK3 = currentStateCLK3;
-
-  return counter3;
+  delay(10);
 }
