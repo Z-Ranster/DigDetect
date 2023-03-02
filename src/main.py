@@ -1,5 +1,5 @@
 import tkinter as tk
-import tkinter.font as tkFont
+import tkinter.font as tkFont   
 import serial
 import serial.tools.list_ports
 import time
