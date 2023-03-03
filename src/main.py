@@ -8,6 +8,17 @@ import numpy as np
 import threading
 import queue
 
+# Write a todo comment
+# TODO: Implement zero location switch
+# TODO: Implement Local vs. gps digitial switch
+# TODO: Implement https://github.com/ParthJadhav/Tkinter-Designer
+# TODO: Implement Zeroing block to help reference the size of the excavtor
+# TODO: Implement a plot of the excavator end effector with relation to inground objects
+# TODO: Setup and configure the Nvidia Jetson
+# TODO: Implement hash checking on the serial string to avoid the crashing that currently happens
+# figd_EAxuwXcuVYVXMNtHQ7Q8cb_3gn9cr1cil3rU3i9Y
+# https://www.figma.com/file/MzXoX9KRS7dF40DVrw6Qp0/Untitled?node-id=0%3A1&t=YcVrQ9bDgqMlGuP2-1
+
 class App():
     def __init__(self, root):
         #setting title
@@ -205,8 +216,9 @@ if __name__ == "__main__":
     ser = serial.Serial()
 
     # Kinematic Chain
+    # Units in inches
     excavator = ik.Actuator(
-            [[0, 0, 0.2], "z", [0.0, 0.0, .2], "y", [0.0, 0.0, 1],
+            [[0, 0, 0.2], "z", [0.0, 0.5, 0.0], "y", [0.0, 0.0, 1],
                 "y", [0.0, 0.0, 1], "y", [0.0, 0.0, 0.5]]
     )
 
