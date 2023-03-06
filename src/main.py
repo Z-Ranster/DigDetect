@@ -16,8 +16,6 @@ import queue
 # TODO: Implement a plot of the excavator end effector with relation to inground objects
 # TODO: Setup and configure the Nvidia Jetson
 # TODO: Implement hash checking on the serial string to avoid the crashing that currently happens
-# figd_EAxuwXcuVYVXMNtHQ7Q8cb_3gn9cr1cil3rU3i9Y
-# https://www.figma.com/file/MzXoX9KRS7dF40DVrw6Qp0/Untitled?node-id=0%3A1&t=YcVrQ9bDgqMlGuP2-1
 
 class App():
     def __init__(self, root):

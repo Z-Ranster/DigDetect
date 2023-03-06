@@ -1,0 +1,1 @@
+python -m tkdesigner.cli https://www.figma.com/file/MzXoX9KRS7dF40DVrw6Qp0/Dig-Detect-Interface figd_EAxuwXcuVYVXMNtHQ7Q8cb_3gn9cr1cil3rU3i9Y
