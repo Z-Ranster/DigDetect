@@ -1,52 +1,105 @@
-import threading
-import build.gui as gui
-import time
-import DDSerial
-import matplotlib.pylab as plt
-import kinematics
-import sched
+# import gui
+# import tkinter as Tk
 
-# Write a todo comment
-# TODO: Implement Zeroing block to help reference the size of the excavtor
-# TODO: Implement a plot of the excavator end effector with relation to inground objects
-# TODO: Setup and configure the Nvidia Jetson
 
-class runnableItems():
-    def updateSerialPorts():
-        DDSerial.updateSerialPorts()
+# # Write a todo comment
+# # TODO: Implement Zeroing block to help reference the size of the excavtor
+# # TODO: Implement a plot of the excavator end effector with relation to inground objects
+# # TODO: Setup and configure the Nvidia Jetson
 
-    def visualizeModel():
-        kinematics.visualizeKM()
 
-    def connectSerial():
-        DDSerial.startSerial()
+# if __name__ == "__main__":
+#     # Define a tkinter window
+#     window = Tk.Tk()
+#     app = gui.App(window)
+#     app.mainLoop()
 
-    def disconnectSerial():
-        DDSerial.closeSerial()
+#     # gui.create_window(window, runnableItemsObject)
 
-    def updateData():
-        print("Updating Data...")
-        # Read Data
-        deg = DDSerial.readSerial()
-        # Update Kinematics
-        kinematics.calculateAngle(deg)
+import pygame
+import sys
+from pygame.locals import *
+import random
 
-    def on_close():
-        print("Serial is ending...")
-        DDSerial.closeSerial()
-        print("Window is closing...")
-        # Close the tkinter window
-        gui.window.destroy()
-        # Stop both threads
-        print("Done closing everything...")
+pygame.init()
 
-    # This is the function that will be updating all of the gui elements.
-    def refreshTimer():
-        # Get the current time
-        current_time = time.strftime("%H:%M:%S")
-        runnableItems.updateData()
-        #scheduler.enter(10, runnableItems.refreshTimer)
+FPS = 60
+FramePerSec = pygame.time.Clock()
 
-if __name__ == "__main__":
-    gui.create_window()
-    
+# Predefined some colors
+BLUE = (0, 0, 255)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+
+# Screen information
+SCREEN_WIDTH = 400
+SCREEN_HEIGHT = 600
+
+DISPLAYSURF = pygame.display.set_mode((400, 600))
+DISPLAYSURF.fill(WHITE)
+pygame.display.set_caption("Game")
+
+
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.image.load(
+            "C:\\Users\\zolech\\Documents\\Github\\DigDetect\\src\\assets\\frame0\\button_1.png")
+        self.rect = self.image.get_rect()
+        self.rect.center = (random.randint(40, SCREEN_WIDTH-40), 0)
+
+    def move(self):
+        self.rect.move_ip(0, 10)
+        if (self.rect.bottom > 600):
+            self.rect.top = 0
+            self.rect.center = (random.randint(30, 370), 0)
+
+    def draw(self, surface):
+        surface.blit(self.image, self.rect)
+
+
+class Player(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.image.load(
+            "C:\\Users\\zolech\\Documents\\Github\\DigDetect\\src\\assets\\frame0\\button_1.png")
+        self.rect = self.image.get_rect()
+        self.rect.center = (160, 520)
+
+    def update(self):
+        pressed_keys = pygame.key.get_pressed()
+       # if pressed_keys[K_UP]:
+        # self.rect.move_ip(0, -5)
+       # if pressed_keys[K_DOWN]:
+        # self.rect.move_ip(0,5)
+
+        if self.rect.left > 0:
+            if pressed_keys[K_LEFT]:
+                self.rect.move_ip(-5, 0)
+        if self.rect.right < SCREEN_WIDTH:
+            if pressed_keys[K_RIGHT]:
+                self.rect.move_ip(5, 0)
+
+    def draw(self, surface):
+        surface.blit(self.image, self.rect)
+
+
+P1 = Player()
+E1 = Enemy()
+
+while True:
+    for event in pygame.event.get():
+        if event.type == QUIT:
+            pygame.quit()
+            sys.exit()
+    P1.update()
+    E1.move()
+
+    DISPLAYSURF.fill(WHITE)
+    P1.draw(DISPLAYSURF)
+    E1.draw(DISPLAYSURF)
+
+    pygame.display.update()
+    FramePerSec.tick(FPS)

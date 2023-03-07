@@ -3,48 +3,40 @@
 # https://github.com/ParthJadhav/Tkinter-Designer
 
 
+from tkinter import Tk, Canvas, Entry, Text, Button, PhotoImage
 from pathlib import Path
 
 import os
-from mainTest import runnableItems as RI
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import time
+import DDSerial
+import sched
+import kinematics
 
-# from tkinter import *
+import tkinter as tk
 # Explicit imports to satisfy Flake8
-from tkinter import Tk, Canvas, Entry, Text, Button, PhotoImage
 
 OUTPUT_PATH = Path(__file__).parent
-ASSETS_PATH = OUTPUT_PATH / Path((os.getcwd() + r"\src\build\assets\frame0"))
+ASSETS_PATH = OUTPUT_PATH / Path((os.getcwd() + r"\src\assets\frame0"))
 
-window = Tk()
 
 def relative_to_assets(path: str) -> Path:
     return ASSETS_PATH / Path(path)
 
-def graph(fig):
-    canvas = FigureCanvasTkAgg(fig)
 
-def create_window():
-    window.title("Dig Detect Desktop")
-    window.protocol("WM_DELETE_WINDOW", RI.on_close)
-    # Timer Attempt
-    RI.refreshTimer()
-    window.geometry("800x400")
-    window.configure(bg = "#232323")
-
+class Application(tk.Frame):
+    window = Tk()
 
     canvas = Canvas(
         window,
-        bg = "#232323",
-        height = 400,
-        width = 800,
-        bd = 0,
-        highlightthickness = 0,
-        relief = "ridge"
+        bg="#232323",
+        height=400,
+        width=800,
+        bd=0,
+        highlightthickness=0,
+        relief="ridge"
     )
 
-    canvas.place(x = 0, y = 0)
+    canvas.place(x=0, y=0)
     canvas.create_text(
         324.0,
         49.0,
@@ -103,7 +95,7 @@ def create_window():
         fg="#000716",
         highlightthickness=0
     )
-    entry_1.place(
+    a = entry_1.place(
         x=13.0,
         y=221.0,
         width=200.0,
@@ -165,7 +157,7 @@ def create_window():
         image=button_image_1,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: print("button_1 clicked"),
+        command=lambda: app.updateSerialPorts(),
         relief="flat"
     )
     button_1.place(
@@ -229,7 +221,7 @@ def create_window():
         image=button_image_5,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: print("button_5 clicked"),
+        command=lambda: app.visualizeModel(),
         relief="flat"
     )
     button_5.place(
@@ -245,7 +237,7 @@ def create_window():
         image=button_image_6,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: print("button_6 clicked"),
+        command=lambda: app.connectSerial(),
         relief="flat"
     )
     button_6.place(
@@ -261,7 +253,7 @@ def create_window():
         image=button_image_7,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: print("button_7 clicked"),
+        command=lambda: app.disconnectSerial(),
         relief="flat"
     )
     button_7.place(
@@ -310,5 +302,54 @@ def create_window():
         388.0,
         fill="#D9D9D9",
         outline="")
-    window.resizable(False, False)
-    window.mainloop()
+
+    def updateSerialPorts(self):
+        DDSerial.updateSerialPorts()
+
+    def visualizeModel(self):
+        kinematics.visualizeKM()
+
+    def connectSerial(self):
+        # print(app.entry_1.get(0))
+        # DDSerial.selected_SerialPort = app.entry_1.get(self, 0)
+        DDSerial.startSerial()
+
+    def disconnectSerial(self):
+        DDSerial.closeSerial()
+
+    def updateData(self):
+        # Read Data
+        if DDSerial.ser.is_open:
+            deg = DDSerial.readSerial()
+            # Update Kinematics
+            # kinematics.calculateAngle(deg)
+
+    def on_close(self):
+        print("Serial is ending...")
+        DDSerial.closeSerial()
+        print("Window is closing...")
+        # Close the tkinter window
+        # self.window.destroy()
+        # Stop both threads
+        print("Done closing everything...")
+
+    # This is the function that will be updating all of the gui elements.
+    def refreshTimer(self):
+        # Get the current time
+        current_time = time.strftime("%H:%M:%S")
+        self.updateData()
+        # Schedule the refreshTimer() method to be called again in 1 second
+        self.after(10, self.refreshTimer)
+
+
+if __name__ == "__main__":
+    # Define a tkinter window
+    app = Application()
+    app.master.title("Dig Detect Desktop")
+    # app.master.protocol("WM_DELETE_WINDOW", app.on_close())
+
+    app.master.geometry("800x400")
+    app.master.configure(bg="#232323")
+    app.master.resizable(False, False)
+    app.refreshTimer()
+    app.mainloop()

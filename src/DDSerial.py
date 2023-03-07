@@ -5,24 +5,26 @@ import serial.tools.list_ports
 
 # Serial Variables
 baudRate = 9600
-selected_SerialPort = ''
+selected_SerialPort = 'COM4'
 serialPorts = []
 ser = serial.Serial()
 
+
 def readSerial():
     if ser.isOpen():
-            # Read a line of serial input
-            line = ser.readline().strip().decode()
-            # Do something with the input
-            print(line)
-            # Split the input into a list
-            currentData = line.split(",")
-            if len(currentData) == 10:
-                a = float(currentData[1])
-                b = float(currentData[2])
-                c = float(currentData[3])
-                data = [0,a,b,c]
-                return data
+        # Read a line of serial input
+        line = ser.readline().strip().decode()
+        # Do something with the input
+        print(line)
+        # Split the input into a list
+        currentData = line.split(",")
+        if len(currentData) == 10:
+            a = float(currentData[1])
+            b = float(currentData[2])
+            c = float(currentData[3])
+            data = [0, a, b, c]
+            return data
+
 
 def updateSerialPorts():
     print("Updating Serial Ports...")
@@ -32,6 +34,8 @@ def updateSerialPorts():
     ports = serial.tools.list_ports.comports()
     for port in ports:
         serialPorts.append(port.device)
+        print(str(port))
+
 
 def startSerial():
     print("Connecting to Serial Port: " + selected_SerialPort)
@@ -46,11 +50,12 @@ def startSerial():
     except Exception as e:
         print("Unknown error opening serial port: {e}")
 
+
 def closeSerial():
-        try:
-            ser.close()
-            print("Disconnected!")
-        except serial.SerialException as e:
-            print("Error opening serial port: {e}")
-        except Exception as e:
-            print("Unknown error opening serial port: {e}")
+    try:
+        ser.close()
+        print("Disconnected!")
+    except serial.SerialException as e:
+        print("Error opening serial port: {e}")
+    except Exception as e:
+        print("Unknown error opening serial port: {e}")
