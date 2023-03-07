@@ -4,6 +4,8 @@
 
 
 from pathlib import Path
+import os
+import mainTest
 
 # from tkinter import *
 # Explicit imports to satisfy Flake8
@@ -11,14 +13,13 @@ from tkinter import Tk, Canvas, Entry, Text, Button, PhotoImage
 
 
 OUTPUT_PATH = Path(__file__).parent
-ASSETS_PATH = OUTPUT_PATH / Path(r"C:\Users\zrole\Documents\GitHub\DigDetect\src\build\assets\frame0")
-
+ASSETS_PATH = OUTPUT_PATH / Path((os.getcwd() + r"\src\assets\frame0"))
 
 def relative_to_assets(path: str) -> Path:
     return ASSETS_PATH / Path(path)
 
-
 window = Tk()
+window.title("Dig Detect Desktop")
 
 window.geometry("800x300")
 window.configure(bg = "#232323")
@@ -155,7 +156,7 @@ button_1 = Button(
     image=button_image_1,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print("button_1 clicked"),
+    command=lambda: ,
     relief="flat"
 )
 button_1.place(
@@ -221,3 +222,6 @@ image_1 = canvas.create_image(
     image=image_image_1
 )
 window.resizable(False, False)
+
+# Start the GUI
+window.mainloop()
