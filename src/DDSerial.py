@@ -1,12 +1,15 @@
 import serial
 import serial.tools.list_ports
 
+# TODO: Implement hash checking on the serial string to avoid the crashing that currently happens
+
 # Serial Variables
 baudRate = 9600
 selected_SerialPort = ''
+serialPorts = []
 ser = serial.Serial()
 
-def readSerial(model):
+def readSerial():
     if ser.isOpen():
             # Read a line of serial input
             line = ser.readline().strip().decode()
@@ -18,15 +21,21 @@ def readSerial(model):
                 a = float(currentData[1])
                 b = float(currentData[2])
                 c = float(currentData[3])
-                deg = [0,a,b,c]
-                model.angles = np.deg2rad(deg)
-                efLocation = model.fk.solve(np.deg2rad(deg))
-                print(efLocation)
+                data = [0,a,b,c]
+                return data
+
+def updateSerialPorts():
+    print("Updating Serial Ports...")
+    # Clear the list
+    serialPorts.clear()
+    # Read and Print Serial Ports
+    ports = serial.tools.list_ports.comports()
+    for port in ports:
+        serialPorts.append(port.device)
 
 def startSerial():
+    print("Connecting to Serial Port: " + selected_SerialPort)
     try:
-        index = self.lbSerialPorts.curselection()
-        selected_SerialPort = self.lbSerialPorts.get(index)
         ser.port = selected_SerialPort
         ser.baudrate = baudRate
         ser.timeout = 1
