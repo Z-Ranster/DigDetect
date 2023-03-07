@@ -1,5 +1,6 @@
 import serial
 import serial.tools.list_ports
+import kinematics
 
 # TODO: Implement hash checking on the serial string to avoid the crashing that currently happens
 
@@ -23,7 +24,7 @@ def readSerial():
             b = float(currentData[2])
             c = float(currentData[3])
             data = [0, a, b, c]
-            return data
+            kinematics.calculateAngle(data)
 
 
 def updateSerialPorts():
