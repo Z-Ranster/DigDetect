@@ -1,4 +1,4 @@
-Configure the Ubuntu installation
+Configure the Ubuntu installation (https://developer.nvidia.com/embedded/learn/get-started-jetson-xavier-nx-devkit#intro)
 Install Git
 Pull the current version of the Dig Detect project
 Install python (Python 3.10.10 or higher) and the necesary libraries
