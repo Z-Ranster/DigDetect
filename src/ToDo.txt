@@ -1,0 +1,17 @@
+Configure the Ubuntu installation
+Install Git
+Pull the current version of the Dig Detect project
+Install python (Python 3.10.10 or higher) and the necesary libraries
+
+comm                 0.1.2
+kiwisolver           1.4.4
+matplotlib           3.7.0
+matplotlib-inline    0.1.6
+numpy                1.24.2
+open3d               0.16.0
+pygame               2.2.0
+pyserial             3.5
+tinyik               2.2.1
+
+
+Get drivers for screen + touch screen
