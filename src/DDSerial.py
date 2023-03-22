@@ -2,7 +2,7 @@ import serial
 import serial.tools.list_ports
 import kinematics
 
-# TODO: Implement hash checking on the serial string to avoid the crashing that currently happens
+# The checking is causing speed issues.  Need to find a better way to do this.
 
 # Serial Variables
 baudRate = 9600
@@ -13,18 +13,19 @@ ser = serial.Serial()
 
 def readSerial():
     if ser.isOpen():
-        # Read a line of serial input
-        line = ser.readline().strip().decode()
-        # Do something with the input
-        print(line)
-        # Split the input into a list
-        currentData = line.split(",")
-        if len(currentData) == 10:
-            a = float(currentData[1])
-            b = float(currentData[2])
-            c = float(currentData[3])
-            data = [0, a, b, c]
-            kinematics.calculateAngle(data)
+        data_ready = False
+        good_data_count = 0
+        while not data_ready:
+            if ser.in_waiting > 0:
+                line = ser.readline().decode().strip()
+                current_data = line.split(",")
+                if len(current_data) == 11 and "DDT" in current_data[0]:
+                    good_data_count += 1
+                    if good_data_count >= 3:  # Wait for 3 good data entries before processing
+                        data_ready = True
+                        return current_data
+                else:
+                    good_data_count = 0  # Reset the good data count if bad data is received
 
 
 def updateSerialPorts():

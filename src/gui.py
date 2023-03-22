@@ -4,6 +4,10 @@
 # Documentation --> https://tkdocs.com/index.html
 
 
+import tkinter as tk
+import DDPlotting
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from tkinter import Tk, Canvas, Entry, Text, Button, PhotoImage
 from pathlib import Path
 
@@ -12,8 +16,11 @@ import time
 import DDSerial
 import sched
 import kinematics
+import matplotlib
+import numpy as np
+import random
+matplotlib.use("TkAgg")
 
-import tkinter as tk
 # Explicit imports to satisfy Flake8
 
 OUTPUT_PATH = Path(__file__).parent
@@ -27,11 +34,14 @@ def relative_to_assets(path: str) -> Path:
 class Application(tk.Frame):
     window = Tk()
 
+    # Define Plotter
+    plotter = DDPlotting.LinePlotter()
+
     canvas = Canvas(
         window,
         bg="#232323",
-        height=300,
-        width=800,
+        height=400,
+        width=865,
         bd=0,
         highlightthickness=0,
         relief="ridge"
@@ -48,8 +58,8 @@ class Application(tk.Frame):
     )
 
     canvas.create_text(
-        602.0,
-        49.0,
+        631,
+        54,
         anchor="nw",
         text="Bucket Location",
         fill="#D9D9D9",
@@ -57,7 +67,7 @@ class Application(tk.Frame):
     )
 
     canvas.create_text(
-        19.0,
+        20,
         49.0,
         anchor="nw",
         text="Serial Port",
@@ -66,10 +76,19 @@ class Application(tk.Frame):
     )
 
     canvas.create_text(
-        352.0,
+        385,
         15.0,
         anchor="nw",
         text="Dig Detect",
+        fill="#D9D9D9",
+        font=("Roboto Medium", 20 * -1)
+    )
+
+    canvas.create_text(
+        26,
+        206,
+        anchor="nw",
+        text="Close!",
         fill="#D9D9D9",
         font=("Roboto Medium", 20 * -1)
     )
@@ -104,7 +123,7 @@ class Application(tk.Frame):
         relief="flat"
     )
     button_1.place(
-        x=19.0,
+        x=20,
         y=82.0,
         width=91.0,
         height=22.0
@@ -121,7 +140,7 @@ class Application(tk.Frame):
     )
     button_2.place(
         x=20.0,
-        y=210.0,
+        y=175,
         width=91.0,
         height=22.0
     )
@@ -136,24 +155,8 @@ class Application(tk.Frame):
         relief="flat"
     )
     button_3.place(
-        x=19.0,
-        y=178.0,
-        width=91.0,
-        height=22.0
-    )
-
-    button_image_4 = PhotoImage(
-        file=relative_to_assets("button_4.png"))
-    button_4 = Button(
-        image=button_image_4,
-        borderwidth=0,
-        highlightthickness=0,
-        command=lambda: print("button_4 clicked"),
-        relief="flat"
-    )
-    button_4.place(
-        x=19.0,
-        y=146.0,
+        x=20,
+        y=144,
         width=91.0,
         height=22.0
     )
@@ -214,29 +217,42 @@ class Application(tk.Frame):
         image=image_image_1
     )
 
-    canvas.create_rectangle(
-        545.0,
-        82.0,
-        787.0,
-        291.0,
-        fill="#D9D9D9",
+    # Placeholder for the 3D Plot
+    # canvas.create_rectangle(
+    #     545.0,
+    #     82.0,
+    #     787.0,
+    #     291.0,
+    #     fill="#D9D9D9",
+    #     outline="")
+
+    rec1 = canvas.create_rectangle(
+        122,
+        144,
+        144.0,
+        166.0,
+        fill="#FF0000",
         outline="")
 
-    canvas.create_rectangle(
-        124.0,
-        180.0,
+    rec2 = canvas.create_rectangle(
+        122.0,
+        175.0,
         144.0,
-        200.0,
-        fill="#D9D9D9",
+        197.0,
+        fill="#00FF00",
         outline="")
 
-    canvas.create_rectangle(
-        124.0,
-        212.0,
+    rec3 = canvas.create_rectangle(
+        122.0,
+        206,
         144.0,
-        232.0,
-        fill="#D9D9D9",
+        228.0,
+        fill="#00FF00",
         outline="")
+
+    canvas2 = FigureCanvasTkAgg(plotter.fig, master=window)
+    canvas2.draw()
+    canvas2.get_tk_widget().place(x=545, y=82, width=300, height=300)
 
     def updateSerialPorts(self):
         DDSerial.updateSerialPorts()
@@ -245,23 +261,42 @@ class Application(tk.Frame):
         kinematics.visualizeKM()
 
     def connectSerial(self):
+        DDSerial.selected_SerialPort = self.entry_1.get()
         DDSerial.startSerial()
 
     def disconnectSerial(self):
         DDSerial.closeSerial()
 
     def updateData(self):
+        data = [0] * 10
         # Read Data
         if DDSerial.ser.is_open:
-            DDSerial.readSerial()
+            data = DDSerial.readSerial()
+        # Process Data
+        float_array = [float(x) for x in data[1:5]]
+        kinematics.calculateAngle(float_array)
+        # Create a random number generator for variable i
+        i = random.randint(0, 100)
+        self.plotter.p0 = [
+            5 + 3*np.sin(i/10), 1 + np.cos(i/10), 1 + np.sin(i/10)]
+
+        # print(kinematics.efLocation)
+        # app.plotter.set_point(kinematics.efLocation)
+        # If DDPlotting.CloseToLine is true, then change rec3 to red
+        if app.plotter.closeToLine:
+            self.canvas.itemconfig(self.rec3, fill="#FF0000")
+            # print("The point is close to the line.")
+        else:
+            self.canvas.itemconfig(self.rec3, fill="#00FF00")
+            # print("The point is not close to the line.")
 
     def on_close(self):
         print("Serial is ending...")
         DDSerial.closeSerial()
+        app.plotter.stop_animation()
         print("Window is closing...")
         # Close the tkinter window
         # self.window.destroy()
-        # Stop both threads
         print("Done closing everything...")
 
     # This is the function that will be updating all of the gui elements.
@@ -270,17 +305,19 @@ class Application(tk.Frame):
         current_time = time.strftime("%H:%M:%S")
         self.updateData()
         # Schedule the refreshTimer() method to be called again in 1 second
-        self.after(10, self.refreshTimer)
+        self.after(50, self.refreshTimer)
 
 
 if __name__ == "__main__":
     # Define a tkinter window
     app = Application()
     app.master.title("Dig Detect Desktop")
+
     # app.master.protocol("WM_DELETE_WINDOW", app.on_close())
 
-    app.master.geometry("800x300")
+    app.master.geometry("865x400")
     app.master.configure(bg="#232323")
     app.master.resizable(False, False)
     app.refreshTimer()
+    app.plotter.start_animation()
     app.mainloop()

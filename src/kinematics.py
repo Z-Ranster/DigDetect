@@ -15,7 +15,7 @@ efLocation = [0, 0, 0]
 def calculateAngle(deg):
     excavator.angles = np.deg2rad(deg)
     efLocation = excavator.fk.solve(np.deg2rad(deg))
-    print(efLocation)
+    # print(efLocation)
 
 
 def visualizeKM():
