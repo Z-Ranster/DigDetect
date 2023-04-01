@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #include <Encoder.h>
-#include <NMEAGPS.h>
 #include <SoftwareSerial.h>
 
 // Encoder Definitions
@@ -37,13 +36,6 @@ long previousStateCLK3 = -999;
 #define ledCW 8
 #define ledCCW 9
 
-// GPS Definition
-NMEAGPS gps; // This parses the GPS data
-// GPS Serial Pins
-#define rxGPSPin 15
-#define txGPSPin 14
-float lati, longi, alti;
-
 // Function to check the encoder values
 long checkEncoder(Encoder encoderNum, long oldPosition, int encoderID)
 {
@@ -74,16 +66,11 @@ void setup()
   pinMode(ledCW, OUTPUT);
   pinMode(ledCCW, OUTPUT);
 
-  // Define pin modes for TX and RX
-  pinMode(rxGPSPin, INPUT);
-  pinMode(txGPSPin, OUTPUT);
-
   // Define pin modes for zero button
   pinMode(zeroButton, INPUT);
 
   // Setup Serial Monitor
   Serial.begin(9600);
-  Serial3.begin(9600);
 }
 
 void loop()
@@ -141,7 +128,7 @@ void loop()
   }
 
   // Transmit Serial Data
-  // Serial.println(serialStream);
+  Serial.println(serialStream);
 
   delay(10);
 }

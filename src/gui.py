@@ -14,11 +14,12 @@ from pathlib import Path
 import os
 import time
 import DDSerial
-import sched
 import kinematics
 import matplotlib
 import numpy as np
 import random
+import sys
+import tkintermapview
 matplotlib.use("TkAgg")
 
 # Explicit imports to satisfy Flake8
@@ -37,6 +38,12 @@ class Application(tk.Frame):
     # Define Plotter
     plotter = DDPlotting.LinePlotter()
 
+    # Define after1
+    after1, after2 = None, None
+
+    # Get GPS Information
+    lat, lon = 35.787743, -78.672858
+
     canvas = Canvas(
         window,
         bg="#232323",
@@ -49,8 +56,8 @@ class Application(tk.Frame):
 
     canvas.place(x=0, y=0)
     canvas.create_text(
-        324.0,
-        49.0,
+        387,
+        54,
         anchor="nw",
         text="GPS Location",
         fill="#D9D9D9",
@@ -58,8 +65,8 @@ class Application(tk.Frame):
     )
 
     canvas.create_text(
-        631,
-        54,
+        749,
+        48,
         anchor="nw",
         text="Bucket Location",
         fill="#D9D9D9",
@@ -70,14 +77,14 @@ class Application(tk.Frame):
         20,
         49.0,
         anchor="nw",
-        text="Serial Port",
+        text="Unit 1 Port",
         fill="#D9D9D9",
         font=("Roboto", 15 * -1)
     )
 
     canvas.create_text(
-        385,
-        15.0,
+        464,
+        17,
         anchor="nw",
         text="Dig Detect",
         fill="#D9D9D9",
@@ -135,7 +142,7 @@ class Application(tk.Frame):
         image=button_image_2,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: print("button_2 clicked"),
+        command=lambda: app.useLocal(),
         relief="flat"
     )
     button_2.place(
@@ -151,7 +158,7 @@ class Application(tk.Frame):
         image=button_image_3,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: print("button_3 clicked"),
+        command=lambda: app.useGPS(),
         relief="flat"
     )
     button_3.place(
@@ -209,13 +216,27 @@ class Application(tk.Frame):
         height=22.0
     )
 
-    image_image_1 = PhotoImage(
-        file=relative_to_assets("image_1.png"))
-    image_1 = canvas.create_image(
-        374.0,
-        186.0,
-        image=image_image_1
-    )
+    # Placeholder for GPS Location
+    # image_image_1 = PhotoImage(
+    #     file=relative_to_assets("image_1.png"))
+    # image_1 = canvas.create_image(
+    #     374.0,
+    #     186.0,
+    #     image=image_image_1
+    # )
+
+    # create map widget
+    map_widget = tkintermapview.TkinterMapView(
+        window, width=300, height=300, corner_radius=0)
+    map_widget.place(x=288, y=84)
+
+    # set current widget position and zoom
+    map_widget.set_position(lat, lon)  # Hunt Library
+    map_widget.set_zoom(17)
+
+    # add markers to map
+    marker_1 = map_widget.set_marker(
+        lat, lon, text="Current Location")
 
     # Placeholder for the 3D Plot
     # canvas.create_rectangle(
@@ -225,6 +246,10 @@ class Application(tk.Frame):
     #     291.0,
     #     fill="#D9D9D9",
     #     outline="")
+
+    canvas2 = FigureCanvasTkAgg(plotter.fig, master=window)
+    canvas2.draw()
+    canvas2.get_tk_widget().place(x=663, y=84, width=300, height=300)
 
     rec1 = canvas.create_rectangle(
         122,
@@ -249,10 +274,6 @@ class Application(tk.Frame):
         228.0,
         fill="#00FF00",
         outline="")
-
-    canvas2 = FigureCanvasTkAgg(plotter.fig, master=window)
-    canvas2.draw()
-    canvas2.get_tk_widget().place(x=545, y=82, width=300, height=300)
 
     def updateSerialPorts(self):
         DDSerial.updateSerialPorts()
@@ -290,34 +311,61 @@ class Application(tk.Frame):
             self.canvas.itemconfig(self.rec3, fill="#00FF00")
             # print("The point is not close to the line.")
 
+    def updateMap(self):
+        # Generate random data for the map and update the map
+        # generate random offsets within +-100ft
+        offset_lat = random.uniform(-0.00015, 0.00015)
+        offset_lng = random.uniform(-0.00015, 0.00015)
+
+        # get current position of marker
+        self.lat, self.lon = self.lat + offset_lat, self.lon + offset_lng
+
+        # update marker position
+        self.marker_1.set_position(self.lat, self.lon)
+
+        # schedule next update
+        self.after2 = self.master.after(500, self.updateMap)
+
     def on_close(self):
         print("Serial is ending...")
         DDSerial.closeSerial()
+        app.after_cancel(app.after1)
+        app.map_widget.destroy()
+        app.after_cancel(app.after2)
         app.plotter.stop_animation()
         print("Window is closing...")
         # Close the tkinter window
         # self.window.destroy()
         print("Done closing everything...")
+        sys.exit()
 
     # This is the function that will be updating all of the gui elements.
-    def refreshTimer(self):
+    def dataRefreshTimer(self):
         # Get the current time
         current_time = time.strftime("%H:%M:%S")
         self.updateData()
         # Schedule the refreshTimer() method to be called again in 1 second
-        self.after(50, self.refreshTimer)
+        self.after1 = self.after(50, self.dataRefreshTimer)
+
+    def useGPS(self):
+        self.canvas.itemconfig(self.rec1, fill="#00FF00")
+        self.canvas.itemconfig(self.rec2, fill="#FF0000")
+
+    def useLocal(self):
+        self.canvas.itemconfig(self.rec1, fill="#FF0000")
+        self.canvas.itemconfig(self.rec2, fill="#00FF00")
 
 
 if __name__ == "__main__":
     # Define a tkinter window
     app = Application()
     app.master.title("Dig Detect Desktop")
+    app.master.protocol("WM_DELETE_WINDOW", app.on_close)
 
-    # app.master.protocol("WM_DELETE_WINDOW", app.on_close())
-
-    app.master.geometry("865x400")
+    app.master.geometry("1024x600")
     app.master.configure(bg="#232323")
     app.master.resizable(False, False)
-    app.refreshTimer()
+    app.dataRefreshTimer()
+    app.updateMap()
     app.plotter.start_animation()
     app.mainloop()
