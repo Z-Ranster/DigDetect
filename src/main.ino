@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #include <Encoder.h>
-#include <TinyGPSPlus.h>
 #include <SoftwareSerial.h>
 
 // Encoder Definitions
@@ -37,15 +36,6 @@ long previousStateCLK3 = -999;
 #define ledCW 8
 #define ledCCW 9
 
-// GPS Definition
-TinyGPSPlus gps;
-// Software Serial Definition
-#define rxPin 17
-#define txPin 16
-// Set up a new SoftwareSerial object
-SoftwareSerial gpsSerial = SoftwareSerial(rxPin, txPin);
-float lati, longi, alti;
-
 // Function to check the encoder values
 long checkEncoder(Encoder encoderNum, long oldPosition, int encoderID)
 {
@@ -76,16 +66,11 @@ void setup()
   pinMode(ledCW, OUTPUT);
   pinMode(ledCCW, OUTPUT);
 
-  // Define pin modes for TX and RX
-  pinMode(rxPin, INPUT);
-  pinMode(txPin, OUTPUT);
-
   // Define pin modes for zero button
   pinMode(zeroButton, INPUT);
 
   // Setup Serial Monitor
   Serial.begin(9600);
-  // gpsSerial.begin(9600);
 }
 
 void loop()
@@ -115,16 +100,14 @@ void loop()
 
   // Serial.println(gpsSerial.read());
 
-  /*
-  gpsSerial.listen();
-  if (gpsSerial.available()){
-    Serial.println("ReadingSerial");
-    int s = gpsSerial.read();
-    if (gps.encode(s)){
-      //gps.f_get_position(&lati, &longi);
-    }
+  if (Serial3.available() > 0)
+  {
+    Serial.println(Serial3.read());
   }
-  */
+  else
+  {
+    Serial.println("No Data");
+  }
 
   // Build Serial Data
   dataValues[0] = 0 * angleIncrement;
