@@ -68,7 +68,7 @@ class Application(tk.Frame):
         749,
         48,
         anchor="nw",
-        text="Bucket Location",
+        text="Bucket",
         fill="#D9D9D9",
         font=("Roboto", 15 * -1)
     )
@@ -77,7 +77,7 @@ class Application(tk.Frame):
         20,
         49.0,
         anchor="nw",
-        text="COM Port",
+        text="Port",
         fill="#D9D9D9",
         font=("Roboto", 15 * -1)
     )
