@@ -42,7 +42,7 @@ class Application(tk.Frame):
     after1, after2 = None, None
 
     # Get GPS Information
-    lat, lon = 35.787743, -78.672858
+    lat, lon = 35.76926, -78.67635
 
     canvas = Canvas(
         window,
@@ -77,7 +77,7 @@ class Application(tk.Frame):
         20,
         49.0,
         anchor="nw",
-        text="Unit 1 Port",
+        text="COM Port",
         fill="#D9D9D9",
         font=("Roboto", 15 * -1)
     )
@@ -236,7 +236,7 @@ class Application(tk.Frame):
 
     # add markers to map
     marker_1 = map_widget.set_marker(
-        lat, lon, text="Current Location")
+        lat, lon)
 
     # Placeholder for the 3D Plot
     # canvas.create_rectangle(
@@ -282,16 +282,18 @@ class Application(tk.Frame):
         kinematics.visualizeKM()
 
     def connectSerial(self):
-        DDSerial.selected_SerialPort = self.entry_1.get()
-        DDSerial.startSerial()
+        if DDSerial.serArduino.is_open == False:
+            DDSerial.selected_SerialPort = self.entry_1.get()
+            DDSerial.startSerial("Arduino")
 
     def disconnectSerial(self):
-        DDSerial.closeSerial()
+        DDSerial.closeSerial("Arduino")
+        DDSerial.closeSerial("GPS")
 
     def updateData(self):
         data = [0] * 10
         # Read Data
-        if DDSerial.ser.is_open:
+        if DDSerial.serArduino.is_open:
             data = DDSerial.readSerial()
         # Process Data
         float_array = [float(x) for x in data[1:5]]
@@ -313,9 +315,9 @@ class Application(tk.Frame):
 
     def updateMap(self):
         # Generate random data for the map and update the map
-        # generate random offsets within +-100ft
-        offset_lat = random.uniform(-0.00015, 0.00015)
-        offset_lng = random.uniform(-0.00015, 0.00015)
+        # generate random offsets within +-1ft
+        offset_lat = random.uniform(-0.0000075, 0.0000075)
+        offset_lng = random.uniform(-0.0000075, 0.0000075)
 
         # get current position of marker
         self.lat, self.lon = self.lat + offset_lat, self.lon + offset_lng
@@ -328,7 +330,8 @@ class Application(tk.Frame):
 
     def on_close(self):
         print("Serial is ending...")
-        DDSerial.closeSerial()
+        DDSerial.closeSerial("Arduino")
+        DDSerial.closeSerial("GPS")
         app.after_cancel(app.after1)
         app.map_widget.destroy()
         app.after_cancel(app.after2)
@@ -350,6 +353,9 @@ class Application(tk.Frame):
     def useGPS(self):
         self.canvas.itemconfig(self.rec1, fill="#00FF00")
         self.canvas.itemconfig(self.rec2, fill="#FF0000")
+        if DDSerial.serGPS.is_open == False:
+            DDSerial.selected_SerialPort = self.entry_1.get()
+            DDSerial.startSerial("GPS")
 
     def useLocal(self):
         self.canvas.itemconfig(self.rec1, fill="#FF0000")
