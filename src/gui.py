@@ -25,7 +25,7 @@ matplotlib.use("TkAgg")
 # Explicit imports to satisfy Flake8
 
 OUTPUT_PATH = Path(__file__).parent
-ASSETS_PATH = OUTPUT_PATH / Path((os.getcwd() + r"\src\assets\frame0"))
+ASSETS_PATH = OUTPUT_PATH / Path((os.getcwd() + r"/src/assets/frame0"))
 
 
 def relative_to_assets(path: str) -> Path:
