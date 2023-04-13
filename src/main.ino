@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #include <Encoder.h>
-#include <SoftwareSerial.h>
 
 // Encoder Definitions
 // Rotary Encoder 0 models rotation of the device (reference Parts of an Excavator Arm image)
@@ -97,17 +96,6 @@ void loop()
   previousStateCLK1 = checkEncoder(myEnc1, previousStateCLK1, 1);
   previousStateCLK2 = checkEncoder(myEnc2, previousStateCLK2, 2);
   previousStateCLK3 = checkEncoder(myEnc3, previousStateCLK3, 3);
-
-  // Serial.println(gpsSerial.read());
-
-  if (Serial3.available() > 0)
-  {
-    Serial.println(Serial3.read());
-  }
-  else
-  {
-    Serial.println("No Data");
-  }
 
   // Build Serial Data
   dataValues[0] = 0 * angleIncrement;
