@@ -11,34 +11,33 @@ serArduino = serial.Serial()
 serGPS = serial.Serial()
 
 
-def readSerial():
+def readArduinoData():
     if serArduino.isOpen():
-        data_ready = False
-        good_data_count = 0
-        while not data_ready:
-            if serArduino.in_waiting > 0:
-                line = serArduino.readline().decode().strip()
-                current_data = line.split(",")
-                if len(current_data) == 11 and "DDT" in current_data[0]:
-                    good_data_count += 1
-                    if good_data_count >= 3:  # Wait for 3 good data entries before processing
-                        data_ready = True
-                        return current_data
-                else:
-                    good_data_count = 0  # Reset the good data count if bad data is received
+        # data_ready = False
+        # good_data_count = 0
+        # while not data_ready:
+        #     if serArduino.in_waiting > 0:
+        try:
+            line = serArduino.readline().decode().strip()
+            current_data = line.split(",")
+            if len(current_data) == 5 and "DDT" in current_data[0]:
+                return current_data
+        except Exception as e:
+            pass
+
+
+def readGPSData():
+    if serGPS.isOpen():
+        line = serGPS.readline().decode('utf-8')
+        return line
 
 
 def updateSerialPorts():
-    print("Updating Serial Ports...")
     # Clear the list
     serialPorts.clear()
     # Read and Print Serial Ports
     ports = serial.tools.list_ports.comports()
-    for port in ports:
-        serialPorts.append(port.device)
-        print(str(port))
-    # Print an empty line
-    print()
+    return ports
 
 
 def startSerial(portUse):
@@ -56,12 +55,11 @@ def startSerial(portUse):
             print("Unknown error opening serial port: {e}")
     elif portUse == "GPS":
         try:
-            # serGPS.port = selected_SerialPort
-            # serGPS.baudrate = baudRate
-            # serGPS.timeout = 1
-            # serGPS.open()
-            # print("GPS - Connected!")
-            l = 0
+            serGPS.port = selected_SerialPort
+            serGPS.baudrate = baudRate
+            serGPS.timeout = 1
+            serGPS.open()
+            print("GPS - Connected!")
         except serial.SerialException as e:
             print("Error opening serial port: {e}")
         except Exception as e:

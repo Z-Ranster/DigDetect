@@ -14,12 +14,12 @@ from pathlib import Path
 import os
 import time
 import DDSerial
-import kinematics
 import matplotlib
 import numpy as np
 import random
 import sys
 import tkintermapview
+import tinyik as ik
 matplotlib.use("TkAgg")
 
 # Explicit imports to satisfy Flake8
@@ -39,16 +39,21 @@ class Application(tk.Frame):
     plotter = DDPlotting.LinePlotter()
 
     # Define after1
-    after1, after2 = None, None
+    after1, after2, after3 = None, None, None
 
     # Get GPS Information
     lat, lon = 35.76926, -78.67635
 
+    # Define eFLocation
+    efLocation = [0, 0, 0]
+    currentAngles = [0, 0, 0, 0]
+    previousAngles = [0, 0, 0, 0]
+
     canvas = Canvas(
         window,
         bg="#232323",
-        height=400,
-        width=865,
+        height=600,
+        width=1024,
         bd=0,
         highlightthickness=0,
         relief="ridge"
@@ -56,8 +61,8 @@ class Application(tk.Frame):
 
     canvas.place(x=0, y=0)
     canvas.create_text(
-        387,
-        54,
+        288.0,
+        49.0,
         anchor="nw",
         text="GPS Location",
         fill="#D9D9D9",
@@ -65,37 +70,46 @@ class Application(tk.Frame):
     )
 
     canvas.create_text(
-        749,
-        48,
+        288.0,
+        434.0,
         anchor="nw",
-        text="Bucket",
+        text="Data Output",
         fill="#D9D9D9",
         font=("Roboto", 15 * -1)
     )
 
     canvas.create_text(
-        20,
+        663.0,
         49.0,
         anchor="nw",
-        text="Port",
+        text="Bucket Location",
         fill="#D9D9D9",
         font=("Roboto", 15 * -1)
     )
 
     canvas.create_text(
-        464,
-        17,
+        42.0,
+        84.0,
         anchor="nw",
-        text="Dig Detect",
+        text="COM Port",
         fill="#D9D9D9",
-        font=("Roboto Medium", 20 * -1)
+        font=("Roboto", 15 * -1)
     )
 
     canvas.create_text(
-        26,
-        206,
+        754.0,
+        398.0,
         anchor="nw",
         text="Close!",
+        fill="#D9D9D9",
+        font=("Roboto", 15 * -1)
+    )
+
+    canvas.create_text(
+        425.0,
+        17.0,
+        anchor="nw",
+        text="Dig Detect Desktop",
         fill="#D9D9D9",
         font=("Roboto Medium", 20 * -1)
     )
@@ -103,8 +117,8 @@ class Application(tk.Frame):
     entry_image_1 = PhotoImage(
         file=relative_to_assets("entry_1.png"))
     entry_bg_1 = canvas.create_image(
-        167.5,
-        60.0,
+        190.5,
+        95.0,
         image=entry_image_1
     )
     entry_1 = Entry(
@@ -114,8 +128,28 @@ class Application(tk.Frame):
         highlightthickness=0
     )
     entry_1.place(
-        x=122.0,
-        y=49.0,
+        x=145.0,
+        y=84.0,
+        width=91.0,
+        height=20.0
+    )
+
+    entry_image_2 = PhotoImage(
+        file=relative_to_assets("entry_2.png"))
+    entry_bg_2 = canvas.create_image(
+        190.5,
+        177.0,
+        image=entry_image_2
+    )
+    entry_2 = Entry(
+        bd=0,
+        bg="#D9D9D9",
+        fg="#000716",
+        highlightthickness=0
+    )
+    entry_2.place(
+        x=145.0,
+        y=166.0,
         width=91.0,
         height=20.0
     )
@@ -130,8 +164,8 @@ class Application(tk.Frame):
         relief="flat"
     )
     button_1.place(
-        x=20,
-        y=82.0,
+        x=145.0,
+        y=330.0,
         width=91.0,
         height=22.0
     )
@@ -146,8 +180,8 @@ class Application(tk.Frame):
         relief="flat"
     )
     button_2.place(
-        x=20.0,
-        y=175,
+        x=42.0,
+        y=281.0,
         width=91.0,
         height=22.0
     )
@@ -162,8 +196,24 @@ class Application(tk.Frame):
         relief="flat"
     )
     button_3.place(
-        x=20,
-        y=144,
+        x=42.0,
+        y=246.0,
+        width=91.0,
+        height=22.0
+    )
+
+    button_image_4 = PhotoImage(
+        file=relative_to_assets("button_4.png"))
+    button_4 = Button(
+        image=button_image_4,
+        borderwidth=0,
+        highlightthickness=0,
+        command=lambda: app.visualizeModel(),
+        relief="flat"
+    )
+    button_4.place(
+        x=44.0,
+        y=330.0,
         width=91.0,
         height=22.0
     )
@@ -174,12 +224,12 @@ class Application(tk.Frame):
         image=button_image_5,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: app.visualizeModel(),
+        command=lambda: app.connectSerial("Arduino"),
         relief="flat"
     )
     button_5.place(
-        x=20.0,
-        y=113.0,
+        x=45.0,
+        y=117.0,
         width=91.0,
         height=22.0
     )
@@ -190,14 +240,23 @@ class Application(tk.Frame):
         image=button_image_6,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: app.connectSerial(),
+        command=lambda: DDSerial.closeSerial("Arduino"),
         relief="flat"
     )
     button_6.place(
-        x=122.0,
-        y=82.0,
+        x=145.0,
+        y=119.0,
         width=91.0,
         height=22.0
+    )
+
+    canvas.create_text(
+        42.0,
+        166.0,
+        anchor="nw",
+        text="GPS Port",
+        fill="#D9D9D9",
+        font=("Roboto", 15 * -1)
     )
 
     button_image_7 = PhotoImage(
@@ -206,12 +265,28 @@ class Application(tk.Frame):
         image=button_image_7,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: app.disconnectSerial(),
+        command=lambda: app.connectSerial("GPS"),
         relief="flat"
     )
     button_7.place(
-        x=123.0,
-        y=113.0,
+        x=42.0,
+        y=199.0,
+        width=91.0,
+        height=22.0
+    )
+
+    button_image_8 = PhotoImage(
+        file=relative_to_assets("button_8.png"))
+    button_8 = Button(
+        image=button_image_8,
+        borderwidth=0,
+        highlightthickness=0,
+        command=lambda: DDSerial.closeSerial("GPS"),
+        relief="flat"
+    )
+    button_8.place(
+        x=145.0,
+        y=199.0,
         width=91.0,
         height=22.0
     )
@@ -231,7 +306,7 @@ class Application(tk.Frame):
     map_widget.place(x=288, y=84)
 
     # set current widget position and zoom
-    map_widget.set_position(lat, lon)  # Hunt Library
+    map_widget.set_position(lat, lon)
     map_widget.set_zoom(17)
 
     # add markers to map
@@ -252,59 +327,114 @@ class Application(tk.Frame):
     canvas2.get_tk_widget().place(x=663, y=84, width=300, height=300)
 
     rec1 = canvas.create_rectangle(
-        122,
-        144,
-        144.0,
-        166.0,
-        fill="#FF0000",
+        145.0,
+        246.0,
+        167.0,
+        268.0,
+        fill="#D9D9D9",
         outline="")
 
     rec2 = canvas.create_rectangle(
-        122.0,
-        175.0,
-        144.0,
-        197.0,
-        fill="#00FF00",
+        145.0,
+        281.0,
+        167.0,
+        303.0,
+        fill="#D9D9D9",
         outline="")
 
     rec3 = canvas.create_rectangle(
-        122.0,
-        206,
-        144.0,
-        228.0,
-        fill="#00FF00",
+        850.0,
+        398.0,
+        872.0,
+        420.0,
+        fill="#D9D9D9",
         outline="")
 
+    image_image_2 = PhotoImage(
+        file=relative_to_assets("image_2.png"))
+    image_2 = canvas.create_image(
+        135.0,
+        480.0,
+        image=image_image_2
+    )
+
+    text1 = tk.Text(window)
+    text1.place(x=288.0, y=464.0)
+    text1Scrollbar = tk.Scrollbar(window, command=text1.yview)
+    text1Scrollbar.place(x=953.0, y=464.0, height=116)
+    text1.configure(yscrollcommand=text1Scrollbar.set, width=83, height=7)
+
+    # Kinematic Chain
+    # Units in inches
+    excavator = ik.Actuator(
+        [[0, 0, 2.19], "z", [0.0, 0.001, 0.0], "y", [0.0, 0.0, 7.5],
+            "y", [0.0, 0.0, 3.5], "y", [0.0, 0.0, 2.4]]
+    )
+
+    # End Effector Location
+    efLocation = [0, 0, 0]
+    currentAngles = [0, 0, 0, 0]
+
     def updateSerialPorts(self):
-        DDSerial.updateSerialPorts()
+        ports = DDSerial.updateSerialPorts()
+        app.text1.insert(tk.END, "-- Available Ports --\n")
+        for port in ports:
+            app.text1.insert(tk.END, str(port) + "\n")
+        app.text1.insert(tk.END, "\n")
 
     def visualizeModel(self):
-        kinematics.visualizeKM()
+        app.visualizeKM()
 
-    def connectSerial(self):
-        if DDSerial.serArduino.is_open == False:
-            DDSerial.selected_SerialPort = self.entry_1.get()
-            DDSerial.startSerial("Arduino")
+    def connectSerial(self, portUse):
+        if portUse == "Arduino":
+            if DDSerial.serArduino.is_open == False:
+                DDSerial.selected_SerialPort = self.entry_1.get()
+                DDSerial.startSerial("Arduino")
+        elif portUse == "GPS":
+            if DDSerial.serGPS.is_open == False:
+                DDSerial.selected_SerialPort = self.entry_2.get()
+                DDSerial.startSerial("GPS")
 
     def disconnectSerial(self):
         DDSerial.closeSerial("Arduino")
         DDSerial.closeSerial("GPS")
 
     def updateData(self):
-        data = [0] * 10
-        # Read Data
+        data = [0] * 5
+        # Read Arduino Data
         if DDSerial.serArduino.is_open:
-            data = DDSerial.readSerial()
-        # Process Data
-        float_array = [float(x) for x in data[1:5]]
-        kinematics.calculateAngle(float_array)
-        # Create a random number generator for variable i
-        i = random.randint(0, 100)
-        self.plotter.p0 = [
-            5 + 3*np.sin(i/10), 1 + np.cos(i/10), 1 + np.sin(i/10)]
+            try:
+                data = DDSerial.readArduinoData()
+                app.currentAngles[0] = float(data[1])
+                app.currentAngles[1] = float(data[2])
+                app.currentAngles[2] = float(data[3])
+            except Exception as e:
+                pass
+        # Read GPS Data
+        # if DDSerial.serGPS.is_open:
+        #     GPSData = DDSerial.readGPSData()
+        #     print("-- GPS Data --")
+        #     print(GPSData)
 
-        # print(kinematics.efLocation)
-        # app.plotter.set_point(kinematics.efLocation)
+    def updateLocationInSpace(self):
+        # print(np.all(app.currentAngles == app.previousAngles))
+        # if np.all(app.currentAngles == app.previousAngles):
+        #     pass
+        # else:
+        self.plotter.p0 = app.efLocation
+        # Random Number Testing
+        # Testing Model
+        # float_array = [float(x) for x in data[1:5]]
+        # Create a random number generator for variable i
+        # i = random.randint(0, 100)
+        # self.plotter.p0 = [
+        #     5 + 3*np.sin(i/10), 1 + np.cos(i/10), 1 + np.sin(i/10)]
+
+        app.calculateAngle()
+        print(app.currentAngles)
+        print(app.efLocation)
+        # app.plotter.set_point(app.efLocation)
+
         # If DDPlotting.CloseToLine is true, then change rec3 to red
         if app.plotter.closeToLine:
             self.canvas.itemconfig(self.rec3, fill="#FF0000")
@@ -312,6 +442,17 @@ class Application(tk.Frame):
         else:
             self.canvas.itemconfig(self.rec3, fill="#00FF00")
             # print("The point is not close to the line.")
+        self.previousAngles = self.currentAngles
+
+    def testPosition(self):
+        # Angles in Degrees
+        # testAngles = [0, 180-25, -35, 60]
+        app.currentAngles = [0, 70, 90, 72.3]  # I think this looks right
+        app.calculateAngle()
+
+    def initialize(self):
+        # app.text1
+        a = 0
 
     def updateMap(self):
         # Generate random data for the map and update the map
@@ -348,18 +489,26 @@ class Application(tk.Frame):
         current_time = time.strftime("%H:%M:%S")
         self.updateData()
         # Schedule the refreshTimer() method to be called again in 1 second
-        self.after1 = self.after(50, self.dataRefreshTimer)
+        self.after1 = self.after(10, self.dataRefreshTimer)
+
+    def updateLocationTimer(self):
+        self.updateLocationInSpace()
+        self.after3 = self.after(100, self.updateLocationTimer)
 
     def useGPS(self):
         self.canvas.itemconfig(self.rec1, fill="#00FF00")
         self.canvas.itemconfig(self.rec2, fill="#FF0000")
-        if DDSerial.serGPS.is_open == False:
-            DDSerial.selected_SerialPort = self.entry_1.get()
-            DDSerial.startSerial("GPS")
 
     def useLocal(self):
         self.canvas.itemconfig(self.rec1, fill="#FF0000")
         self.canvas.itemconfig(self.rec2, fill="#00FF00")
+
+    def calculateAngle(self):
+        app.excavator.angles = np.deg2rad(app.currentAngles)
+        app.efLocation = app.excavator.fk.solve(np.deg2rad(app.currentAngles))
+
+    def visualizeKM(self):
+        ik.visualize(app.excavator)
 
 
 if __name__ == "__main__":
@@ -371,7 +520,9 @@ if __name__ == "__main__":
     app.master.geometry("1024x600")
     app.master.configure(bg="#232323")
     app.master.resizable(False, False)
+    app.testPosition()
     app.dataRefreshTimer()
+    app.updateLocationTimer()
     app.updateMap()
     app.plotter.start_animation()
     app.mainloop()
