@@ -10,8 +10,8 @@ class LinePlotter:
 
     def __init__(self):
         # Define the points on the line
-        self.a = [-5, 0, 0]
-        self.b = [5, 0, 0]
+        self.a = [-20, 0, 0]
+        self.b = [20, 0, 0]
 
         # Create an array of parameter values t
         self.t = np.linspace(0, 1, 100)
@@ -32,9 +32,9 @@ class LinePlotter:
         self.point, = self.ax.plot3D(self.p0[0], self.p0[1], self.p0[2], 'ro')
 
         # Set the plot limits
-        self.ax.set_xlim3d(-5, 5)
-        self.ax.set_ylim3d(-5, 5)
-        self.ax.set_zlim3d(-5, 5)
+        self.ax.set_xlim3d(-5, 20)
+        self.ax.set_ylim3d(-5, 20)
+        self.ax.set_zlim3d(-5, 20)
 
         # Set the plot labels
         self.ax.set_xlabel('X axis')
