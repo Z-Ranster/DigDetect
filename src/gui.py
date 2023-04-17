@@ -91,7 +91,7 @@ class Application(tk.Frame):
         42.0,
         84.0,
         anchor="nw",
-        text="COM Port",
+        text="COM",
         fill="#D9D9D9",
         font=("Roboto", 15 * -1)
     )
@@ -170,37 +170,37 @@ class Application(tk.Frame):
         height=22.0
     )
 
-    button_image_2 = PhotoImage(
-        file=relative_to_assets("button_2.png"))
-    button_2 = Button(
-        image=button_image_2,
-        borderwidth=0,
-        highlightthickness=0,
-        command=lambda: app.useLocal(),
-        relief="flat"
-    )
-    button_2.place(
-        x=42.0,
-        y=281.0,
-        width=91.0,
-        height=22.0
-    )
+    # button_image_2 = PhotoImage(
+    #     file=relative_to_assets("button_2.png"))
+    # button_2 = Button(
+    #     image=button_image_2,
+    #     borderwidth=0,
+    #     highlightthickness=0,
+    #     command=lambda: app.useLocal(),
+    #     relief="flat"
+    # )
+    # button_2.place(
+    #     x=42.0,
+    #     y=281.0,
+    #     width=91.0,
+    #     height=22.0
+    # )
 
-    button_image_3 = PhotoImage(
-        file=relative_to_assets("button_3.png"))
-    button_3 = Button(
-        image=button_image_3,
-        borderwidth=0,
-        highlightthickness=0,
-        command=lambda: app.useGPS(),
-        relief="flat"
-    )
-    button_3.place(
-        x=42.0,
-        y=246.0,
-        width=91.0,
-        height=22.0
-    )
+    # button_image_3 = PhotoImage(
+    #     file=relative_to_assets("button_3.png"))
+    # button_3 = Button(
+    #     image=button_image_3,
+    #     borderwidth=0,
+    #     highlightthickness=0,
+    #     command=lambda: app.useGPS(),
+    #     relief="flat"
+    # )
+    # button_3.place(
+    #     x=42.0,
+    #     y=246.0,
+    #     width=91.0,
+    #     height=22.0
+    # )
 
     button_image_4 = PhotoImage(
         file=relative_to_assets("button_4.png"))
@@ -254,7 +254,7 @@ class Application(tk.Frame):
         42.0,
         166.0,
         anchor="nw",
-        text="GPS Port",
+        text="GPS",
         fill="#D9D9D9",
         font=("Roboto", 15 * -1)
     )
@@ -326,21 +326,21 @@ class Application(tk.Frame):
     canvas2.draw()
     canvas2.get_tk_widget().place(x=663, y=84, width=300, height=300)
 
-    rec1 = canvas.create_rectangle(
-        145.0,
-        246.0,
-        167.0,
-        268.0,
-        fill="#D9D9D9",
-        outline="")
+    # rec1 = canvas.create_rectangle(
+    #     145.0,
+    #     246.0,
+    #     167.0,
+    #     268.0,
+    #     fill="#D9D9D9",
+    #     outline="")
 
-    rec2 = canvas.create_rectangle(
-        145.0,
-        281.0,
-        167.0,
-        303.0,
-        fill="#D9D9D9",
-        outline="")
+    # rec2 = canvas.create_rectangle(
+    #     145.0,
+    #     281.0,
+    #     167.0,
+    #     303.0,
+    #     fill="#D9D9D9",
+    #     outline="")
 
     rec3 = canvas.create_rectangle(
         850.0,
