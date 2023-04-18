@@ -22,6 +22,7 @@ def readArduinoData():
             current_data = line.split(",")
             if len(current_data) == 5 and "DDT" in current_data[0]:
                 return current_data
+            print(current_data)
         except Exception as e:
             pass
 

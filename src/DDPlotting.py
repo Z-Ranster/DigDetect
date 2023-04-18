@@ -8,10 +8,13 @@ class LinePlotter:
     closeToLine = False
     p0 = [5, 1, 1]
 
+    # Define the distance away from the line to consider a "near hit"
+    hitDistance = 1.1
+
     def __init__(self):
         # Define the points on the line
-        self.a = [-20, 0, 0]
-        self.b = [20, 0, 0]
+        self.a = [0, 0, -.5]
+        self.b = [8.2, 0, -.5]
 
         # Create an array of parameter values t
         self.t = np.linspace(0, 1, 100)
@@ -31,10 +34,13 @@ class LinePlotter:
         # Plot the point
         self.point, = self.ax.plot3D(self.p0[0], self.p0[1], self.p0[2], 'ro')
 
+        # Plot the blue dot at (0,0,0)
+        self.ax.scatter(0, 0, 0, color='blue')
+
         # Set the plot limits
-        self.ax.set_xlim3d(-5, 20)
-        self.ax.set_ylim3d(-5, 20)
-        self.ax.set_zlim3d(-5, 20)
+        self.ax.set_xlim3d(0, 8.2)
+        self.ax.set_ylim3d(-1, 1)
+        self.ax.set_zlim3d(-2, 7)
 
         # Set the plot labels
         self.ax.set_xlabel('X axis')
@@ -60,12 +66,10 @@ class LinePlotter:
             (self.xline - p[0])**2 + (self.yline - p[1])**2 + (self.zline - p[2])**2))
 
         # Compare the distance to a threshold value
-        threshold = 1.0
+        threshold = self.hitDistance
         if dist < threshold:
-            # print("The point is close to the line.")
             self.closeToLine = True
         else:
-            # print("The point is not close to the line.")
             self.closeToLine = False
 
         # Return the point

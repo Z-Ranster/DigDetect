@@ -96,12 +96,12 @@ class Application(tk.Frame):
         font=("Roboto", 15 * -1)
     )
 
-    canvas.create_text(
+    textClose = canvas.create_text(
         754.0,
         398.0,
         anchor="nw",
         text="Close!",
-        fill="#D9D9D9",
+        fill="#232323",
         font=("Roboto", 15 * -1)
     )
 
@@ -367,7 +367,7 @@ class Application(tk.Frame):
     # Kinematic Chain
     # Units in inches
     excavator = ik.Actuator(
-        [[0, 0, 2.19], "z", [0.0, 0.001, 0.0], "y", [0.0, 0.0, 7.5],
+        [[0, 0, 2.19], "z", [0.0, 0.000001, 0.0], "y", [0.0, 0.0, 7.5],
             "y", [0.0, 0.0, 3.5], "y", [0.0, 0.0, 2.4]]
     )
 
@@ -431,28 +431,26 @@ class Application(tk.Frame):
         #     5 + 3*np.sin(i/10), 1 + np.cos(i/10), 1 + np.sin(i/10)]
 
         app.calculateAngle()
-        print(app.currentAngles)
-        print(app.efLocation)
+        print("The X Position is: " + str(app.efLocation[0]))
         # app.plotter.set_point(app.efLocation)
 
         # If DDPlotting.CloseToLine is true, then change rec3 to red
         if app.plotter.closeToLine:
             self.canvas.itemconfig(self.rec3, fill="#FF0000")
-            # print("The point is close to the line.")
+            self.canvas.itemconfig(
+                self.textClose, fill="#FF0000")
         else:
             self.canvas.itemconfig(self.rec3, fill="#00FF00")
-            # print("The point is not close to the line.")
+            self.canvas.itemconfig(self.textClose, fill="#00FF00")
         self.previousAngles = self.currentAngles
 
     def testPosition(self):
         # Angles in Degrees
-        # testAngles = [0, 180-25, -35, 60]
-        app.currentAngles = [0, 70, 90, 72.3]  # I think this looks right
+        app.currentAngles = [0, 81, 45, 126]
         app.calculateAngle()
 
     def initialize(self):
-        # app.text1
-        a = 0
+        pass
 
     def updateMap(self):
         # Generate random data for the map and update the map
@@ -495,13 +493,13 @@ class Application(tk.Frame):
         self.updateLocationInSpace()
         self.after3 = self.after(100, self.updateLocationTimer)
 
-    def useGPS(self):
-        self.canvas.itemconfig(self.rec1, fill="#00FF00")
-        self.canvas.itemconfig(self.rec2, fill="#FF0000")
+    # def useGPS(self):
+    #     self.canvas.itemconfig(self.rec1, fill="#00FF00")
+    #     self.canvas.itemconfig(self.rec2, fill="#FF0000")
 
-    def useLocal(self):
-        self.canvas.itemconfig(self.rec1, fill="#FF0000")
-        self.canvas.itemconfig(self.rec2, fill="#00FF00")
+    # def useLocal(self):
+    #     self.canvas.itemconfig(self.rec1, fill="#FF0000")
+    #     self.canvas.itemconfig(self.rec2, fill="#00FF00")
 
     def calculateAngle(self):
         app.excavator.angles = np.deg2rad(app.currentAngles)
@@ -516,8 +514,7 @@ if __name__ == "__main__":
     app = Application()
     app.master.title("Dig Detect Desktop")
     app.master.protocol("WM_DELETE_WINDOW", app.on_close)
-    app.master.attributes("-fullscreen", True)
-    app.master.attributes("-topmost", True)
+    # app.master.attributes("-fullscreen", True)
 
     app.master.geometry("1024x600")
     app.master.configure(bg="#232323")
