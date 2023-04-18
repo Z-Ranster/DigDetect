@@ -431,7 +431,6 @@ class Application(tk.Frame):
         #     5 + 3*np.sin(i/10), 1 + np.cos(i/10), 1 + np.sin(i/10)]
 
         app.calculateAngle()
-        print("The X Position is: " + str(app.efLocation[0]))
         # app.plotter.set_point(app.efLocation)
 
         # If DDPlotting.CloseToLine is true, then change rec3 to red
