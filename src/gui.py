@@ -514,7 +514,7 @@ if __name__ == "__main__":
     app = Application()
     app.master.title("Dig Detect Desktop")
     app.master.protocol("WM_DELETE_WINDOW", app.on_close)
-    # app.master.attributes("-fullscreen", True)
+    app.master.attributes("-fullscreen", True)
 
     app.master.geometry("1024x600")
     app.master.configure(bg="#232323")
