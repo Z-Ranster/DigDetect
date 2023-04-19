@@ -535,6 +535,18 @@ class Application(tk.Frame):
         # Calculate the end effector location using the forward kinematics solver of the excavator object
         app.efLocation = app.excavator.fk.solve(np.deg2rad(app.currentAngles))
 
+    def show_angle(self):
+        """
+        Attempts to visualize the excavator using a function called 'visualize' from an object called 'ik'.
+
+        :return: None
+        """
+        try:
+            # Visualize the excavator using a function called 'visualize' from an object called 'ik'
+            ik.visualize(app.excavator)
+        except Exception as e:
+            pass
+
     # def useGPS(self):
     #     self.canvas.itemconfig(self.rec1, fill="#00FF00")
     #     self.canvas.itemconfig(self.rec2, fill="#FF0000")
@@ -567,7 +579,7 @@ if __name__ == "__main__":
     app.master.resizable(False, False)
 
     # Make the window be full screen
-    app.master.attributes("-fullscreen", True)
+    # app.master.attributes("-fullscreen", True)
 
     # Set the initial position of the window
     app.initial_position()
