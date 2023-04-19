@@ -45,9 +45,9 @@ class LinePlotter:
         self.ax.set_xlim3d(0, 8.2)
         self.ax.set_ylim3d(-1, 1)
         self.ax.set_zlim3d(-2, 7)
-        self.ax.set_xlabel('X axis')
-        self.ax.set_ylabel('Y axis')
-        self.ax.set_zlabel('Z axis')
+        self.ax.set_xlabel('X axis - inches')
+        self.ax.set_ylabel('Y axis - inches')
+        self.ax.set_zlabel('Z axis - inches')
 
         # Initialize animation object
         self.animation = None

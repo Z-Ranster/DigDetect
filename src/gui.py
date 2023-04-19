@@ -80,7 +80,7 @@ class Application(tk.Frame):
         663.0,
         49.0,
         anchor="nw",
-        text="Bucket Location",
+        text="Bucket Location - 1/18 Scale",
         fill="#D9D9D9",
         font=("Roboto", 15 * -1)
     )
