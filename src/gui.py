@@ -1,15 +1,15 @@
+# Import necessary libraries
 import tkinter as tk
-import DDPlotting
+import dd_plotting
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from tkinter import Tk, Canvas, Entry, Text, Button, PhotoImage
 from pathlib import Path
-
 import os
 import time
 import sys
 import time
-import DDSerial
+import dd_serial
 import matplotlib
 import numpy as np
 import random
@@ -18,10 +18,12 @@ import tkintermapview
 import tinyik as ik
 matplotlib.use("TkAgg")
 
-# Explicit imports to satisfy Flake8
-
+# Set the path to the directory that contains the code file
 OUTPUT_PATH = Path(__file__).parent
+# Set the path to the directory that contains the assets
 ASSETS_PATH = OUTPUT_PATH / Path((os.getcwd() + r"/src/assets/frame0"))
+
+# Define a function that returns a path to an asset in the assets directory
 
 
 def relative_to_assets(path: str) -> Path:
@@ -32,7 +34,7 @@ class Application(tk.Frame):
     window = Tk()
 
     # Define Plotter
-    plotter = DDPlotting.LinePlotter()
+    plotter = dd_plotting.LinePlotter()
 
     # Define after1
     after1, after2, after3 = None, None, None
@@ -156,7 +158,7 @@ class Application(tk.Frame):
         image=button_image_1,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: app.updateSerialPorts(),
+        command=lambda: app.update_serial_ports(),
         relief="flat"
     )
     button_1.place(
@@ -204,7 +206,7 @@ class Application(tk.Frame):
         image=button_image_4,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: app.visualizeModel(),
+        command=lambda: ik.visualize(app.excavator),
         relief="flat"
     )
     button_4.place(
@@ -220,7 +222,7 @@ class Application(tk.Frame):
         image=button_image_5,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: app.connectSerial("Arduino"),
+        command=lambda: app.connect_serial("Arduino"),
         relief="flat"
     )
     button_5.place(
@@ -236,7 +238,7 @@ class Application(tk.Frame):
         image=button_image_6,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: DDSerial.closeSerial("Arduino"),
+        command=lambda: app.close_serial("Arduino"),
         relief="flat"
     )
     button_6.place(
@@ -261,7 +263,7 @@ class Application(tk.Frame):
         image=button_image_7,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: app.connectSerial("GPS"),
+        command=lambda: app.connect_serial("GPS"),
         relief="flat"
     )
     button_7.place(
@@ -277,7 +279,7 @@ class Application(tk.Frame):
         image=button_image_8,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: DDSerial.closeSerial("GPS"),
+        command=lambda: app.close_serial("GPS"),
         relief="flat"
     )
     button_8.place(
@@ -348,75 +350,120 @@ class Application(tk.Frame):
             "y", [0.0, 0.0, 3.5], "y", [0.0, 0.0, 2.4]]
     )
 
-    # End Effector Location
+    # Declare global variables for the end effector location and current angles
     efLocation = [0, 0, 0]
     currentAngles = [0, 0, 0, 0]
 
-    def updateSerialPorts(self):
-        ports = DDSerial.updateSerialPorts()
+    def update_serial_ports(self):
+        """
+        Gets a list of available serial ports and displays them in the GUI
+        """
+        # Call the update_serial_ports function from the dd_serial module to get the list of available ports
+        ports = dd_serial.update_serial_ports()
+
+        # Insert the available ports into the GUI
         app.text1.insert(tk.END, "-- Available Ports --\n")
         for port in ports:
             app.text1.insert(tk.END, str(port) + "\n")
         app.text1.insert(tk.END, "\n")
 
-    def visualizeModel(self):
-        app.visualizeKM()
-
-    def connectSerial(self, portUse):
+    def connect_serial(self, portUse):
+        """
+        Connects to the selected serial port for the specified device (Arduino or GPS)
+        """
         if portUse == "Arduino":
-            if DDSerial.serArduino.is_open == False:
-                DDSerial.selected_SerialPort = self.entry_1.get()
-                result = DDSerial.startSerial("Arduino")
+            # Check if the Arduino serial connection is not already open
+            if dd_serial.ser_arduino.is_open == False:
+                # Get the selected serial port from the GUI entry box
+                dd_serial.selected_SerialPort = self.entry_1.get()
+                # Call the connect_serial function from the dd_serial module to connect to the Arduino
+                result = dd_serial.connect_serial("Arduino")
+                # Insert the result of the connection attempt into the GUI
                 app.text1.insert(tk.END, result + "\n")
                 app.text1.insert(tk.END, "\n")
-
         elif portUse == "GPS":
-            if DDSerial.serGPS.is_open == False:
-                DDSerial.selected_SerialPort = self.entry_2.get()
-                result = DDSerial.startSerial("GPS")
+            # Check if the GPS serial connection is not already open
+            if dd_serial.ser_gps.is_open == False:
+                # Get the selected serial port from the GUI entry box
+                dd_serial.selected_SerialPort = self.entry_2.get()
+                # Call the connect_serial function from the dd_serial module to connect to the GPS
+                result = dd_serial.connect_serial("GPS")
+                # Insert the result of the connection attempt into the GUI
                 app.text1.insert(tk.END, result + "\n")
                 app.text1.insert(tk.END, "\n")
 
-    def disconnectSerial(self):
-        result = DDSerial.closeSerial("Arduino")
+    def close_serial(self, portUse):
+        """
+        Closes the serial connection for both the Arduino and GPS devices and displays the results in the GUI.
+
+        :param portUse: The name of the serial port to close.
+        :return: None
+        """
+        # Call the close_serial function from the dd_serial module to close the specified serial connection
+        result = dd_serial.close_serial(portUse)
+        # Insert the result of the serial connection close attempt into the GUI
         app.text1.insert(tk.END, result + "\n")
-        result = DDSerial.closeSerial("GPS")
-        app.text1.insert(tk.END, result + "\n")
+        # Add a new line to separate the results of the Arduino and GPS serial connections
         app.text1.insert(tk.END, "\n")
 
-    def updateData(self):
+    def update_data(self):
+        """
+        Reads data from the Arduino and updates the current angles
+        """
+        # Initialize the data variable
         data = [0] * 5
-        # Read Arduino Data
-        if DDSerial.serArduino.is_open:
+
+        # Check if the Arduino serial connection is open
+        if dd_serial.ser_arduino.is_open:
             try:
-                data = DDSerial.readArduinoData()
+                # Call the readArduinoData function from the dd_serial module to get data from the Arduino
+                data = dd_serial.read_arduino_data()
+                # Update the current angles with the data
                 app.currentAngles[0] = float(data[1])
                 app.currentAngles[1] = float(data[2])
                 app.currentAngles[2] = float(data[3])
             except Exception as e:
-                pass
+                print("Error update_data:" + str(e))
 
-    def updateLocationInSpace(self):
+    def update_location_in_space(self):
+        """
+        Updates the end effector location and checks if it is close to a line.
+
+        :return: None
+        """
+        # Update the end effector location
         self.plotter.p0 = app.efLocation
-        app.calculateAngle()
+        app.calculate_angle()
 
-        # If DDPlotting.CloseToLine is true, then change rec3 to red
+        # Check if end effector is close to a line
         if app.plotter.closeToLine:
+            # Update the text and set rectangle to red if close to a line
             self.canvas.itemconfig(self.textClose, text="Close!")
             self.canvas.itemconfig(self.rec3, fill="#FF0000")
         else:
+            # Reset the text and set rectangle to default color otherwise
             self.canvas.itemconfig(
                 self.rec3, fill=self.canvas["background"], outline=self.canvas["background"])
             self.canvas.itemconfig(self.textClose, text="")
+
+        # Store current angles for future reference
         self.previousAngles = self.currentAngles
 
-    def initialPosition(self):
-        # Angles in Degrees
-        app.currentAngles = [0, 81, 45, 126]
-        app.calculateAngle()
+    def initial_position(self):
+        """
+        Sets the initial angles of the excavator to [0, 81, 45, 126] and calculates the end effector location.
 
-    def updateMap(self):
-        # Generate random data for the map and update the map
+        :return: None
+        """
+        app.currentAngles = [0, 81, 45, 126]
+        app.calculate_angle()
+
+    def update_map(self):
+        """
+        Generates random data for the map and updates the marker position.
+
+        :return: None
+        """
         # generate random offsets within +-0.5ft
         offset_lat = random.uniform(-0.00000375, 0.00000375)
         offset_lng = random.uniform(-0.00000375, 0.00000375)
@@ -428,34 +475,65 @@ class Application(tk.Frame):
         self.marker_1.set_position(self.lat, self.lon)
 
         # schedule next update
-        self.after2 = self.master.after(500, self.updateMap)
+        self.after2 = self.master.after(500, self.update_map)
 
     def on_close(self):
+        """
+        Closes serial connections, stops animation, and exits the program.
+
+        :return: None
+        """
         print("Serial is ending...")
-        result = DDSerial.closeSerial("Arduino")
-        print(result)
-        result = DDSerial.closeSerial("GPS")
-        print(result)
+        # Close the connection to the Arduino and get the result
+        result = dd_serial.close_serial("Arduino")
+        print(result)  # Print the result of closing the Arduino connection
+        # Close the connection to the GPS and get the result
+        result = dd_serial.close_serial("GPS")
+        print(result)  # Print the result of closing the GPS connection
+        # Cancel the data_refresh_timer method's call using after method
         app.after_cancel(app.after1)
-        app.map_widget.destroy()
+        app.map_widget.destroy()  # Destroy the map widget
+        # Cancel the update_location_timer method's call using after method
         app.after_cancel(app.after2)
-        app.plotter.stop_animation()
+        app.plotter.stop_animation()  # Stop the plotter's animation
         print("Window is closing...")
         # Close the tkinter window
         print("Done closing everything...")
-        sys.exit()
+        sys.exit()  # Exit the program
 
-    # This is the function that will be updating all of the gui elements.
-    def dataRefreshTimer(self):
+    def data_refresh_timer(self):
+        """
+        Updates the data on the GUI and schedules the method to be called again.
+
+        :return: None
+        """
         # Get the current time
         current_time = time.strftime("%H:%M:%S")
-        self.updateData()
-        # Schedule the refreshTimer() method to be called again in 1 second
-        self.after1 = self.after(10, self.dataRefreshTimer)
+        self.update_data()  # Update the data on the GUI
+        # Schedule the data_refresh_timer() method to be called again in 1/100 second (10 milliseconds)
+        self.after1 = self.after(10, self.data_refresh_timer)
 
-    def updateLocationTimer(self):
-        self.updateLocationInSpace()
-        self.after3 = self.after(100, self.updateLocationTimer)
+    def update_location_timer(self):
+        """
+        Updates the end effector location periodically and schedules the method to be called again.
+
+        :return: None
+        """
+        self.update_location_in_space()  # Update the end effector location
+        # Schedule the update_location_timer() method to be called again in 1/10 second (100 milliseconds)
+        self.after3 = self.after(100, self.update_location_timer)
+
+    def calculate_angle(self):
+        """
+        Calculates angles for the excavator using the current angles, updates the excavator's angles to radians, and 
+        calculates the end effector location.
+
+        :return: None
+        """
+        # Convert the current angles to radians and update the excavator's angles
+        app.excavator.angles = np.deg2rad(app.currentAngles)
+        # Calculate the end effector location using the forward kinematics solver of the excavator object
+        app.efLocation = app.excavator.fk.solve(np.deg2rad(app.currentAngles))
 
     # def useGPS(self):
     #     self.canvas.itemconfig(self.rec1, fill="#00FF00")
@@ -465,27 +543,46 @@ class Application(tk.Frame):
     #     self.canvas.itemconfig(self.rec1, fill="#FF0000")
     #     self.canvas.itemconfig(self.rec2, fill="#00FF00")
 
-    def calculateAngle(self):
-        app.excavator.angles = np.deg2rad(app.currentAngles)
-        app.efLocation = app.excavator.fk.solve(np.deg2rad(app.currentAngles))
-
-    def visualizeKM(self):
-        ik.visualize(app.excavator)
-
 
 if __name__ == "__main__":
-    # Define a tkinter window
+    # Initialize the tkinter window
     app = Application()
+
+    # Initialize the DDSerial object
+    dd_serial = dd_serial.SerialConnection()
+
+    # Set the title of the window
     app.master.title("Dig Detect Desktop")
+
+    # Set the close protocol for the window
     app.master.protocol("WM_DELETE_WINDOW", app.on_close)
+
+    # Set the window size
+    app.master.geometry("1024x600")
+
+    # Set the background color of the window
+    app.master.configure(bg="#232323")
+
+    # Disable window resizing
+    app.master.resizable(False, False)
+
+    # Make the window be full screen
     # app.master.attributes("-fullscreen", True)
 
-    app.master.geometry("1024x600")
-    app.master.configure(bg="#232323")
-    app.master.resizable(False, False)
-    app.initialPosition()
-    app.dataRefreshTimer()
-    app.updateLocationTimer()
-    app.updateMap()
+    # Set the initial position of the window
+    app.initial_position()
+
+    # Start the data refresh timer
+    app.data_refresh_timer()
+
+    # Start the location update timer
+    app.update_location_timer()
+
+    # Update the map
+    app.update_map()
+
+    # Start the animation
     app.plotter.start_animation()
+
+    # Start the tkinter event loop
     app.mainloop()
