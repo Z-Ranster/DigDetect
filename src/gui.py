@@ -567,7 +567,7 @@ if __name__ == "__main__":
     app.master.resizable(False, False)
 
     # Make the window be full screen
-    # app.master.attributes("-fullscreen", True)
+    app.master.attributes("-fullscreen", True)
 
     # Set the initial position of the window
     app.initial_position()
