@@ -13,16 +13,11 @@ serGPS = serial.Serial()
 
 def readArduinoData():
     if serArduino.isOpen():
-        # data_ready = False
-        # good_data_count = 0
-        # while not data_ready:
-        #     if serArduino.in_waiting > 0:
         try:
             line = serArduino.readline().decode().strip()
             current_data = line.split(",")
             if len(current_data) == 5 and "DDT" in current_data[0]:
                 return current_data
-            print(current_data)
         except Exception as e:
             pass
 
@@ -42,46 +37,36 @@ def updateSerialPorts():
 
 
 def startSerial(portUse):
-    print("Connecting to Serial Port: " + selected_SerialPort)
     if portUse == "Arduino":
         try:
             serArduino.port = selected_SerialPort
             serArduino.baudrate = baudRate
             serArduino.timeout = 1
             serArduino.open()
-            print("Arduino - Connected!")
+            return "Arduino - Connected!"
         except serial.SerialException as e:
-            print("Error opening serial port: {e}")
-        except Exception as e:
-            print("Unknown error opening serial port: {e}")
+            return str(e)
     elif portUse == "GPS":
         try:
             serGPS.port = selected_SerialPort
             serGPS.baudrate = baudRate
             serGPS.timeout = 1
             serGPS.open()
-            print("GPS - Connected!")
-        except serial.SerialException as e:
-            print("Error opening serial port: {e}")
+            return "GPS - Connected!"
         except Exception as e:
-            print("Unknown error opening serial port: {e}")
-    print()
+            return str(e)
 
 
 def closeSerial(portUse):
     if portUse == "Arduino":
         try:
             serArduino.close()
-            print("Arduino - Disconnected!")
-        except serial.SerialException as e:
-            print("Error opening serial port: {e}")
+            return "Arduino - Disconnected!"
         except Exception as e:
-            print("Unknown error opening serial port: {e}")
+            return str(e)
     elif portUse == "GPS":
         try:
             serGPS.close()
-            print("GPS - Disconnected!")
-        except serial.SerialException as e:
-            print("Error opening serial port: {e}")
+            return "GPS - Disconnected!"
         except Exception as e:
-            print("Unknown error opening serial port: {e}")
+            return str(e)
