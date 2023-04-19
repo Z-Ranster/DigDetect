@@ -2,9 +2,9 @@ import tkinter as tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 import numpy as np
-import DDPlotting
+import dd_plotting
 
-plotter = DDPlotting.LinePlotter()
+plotter = dd_plotting.LinePlotter()
 
 # Create a Tkinter window
 root = tk.Tk()

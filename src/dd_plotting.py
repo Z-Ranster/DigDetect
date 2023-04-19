@@ -1,3 +1,4 @@
+# Import necessary libraries
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
@@ -5,13 +6,16 @@ import matplotlib.animation as animation
 
 
 class LinePlotter:
-    closeToLine = False
-    p0 = [5, 1, 1]
+    closeToLine = False  # Initialize flag for proximity to line
+    p0 = [5, 1, 1]  # Initialize point location
 
-    # Define the distance away from the line to consider a "near hit"
-    hitDistance = 1.1
+    hitDistance = 1.1  # Distance away from line to consider a "near hit"
 
     def __init__(self):
+        """
+        Initializes the LinePlotter object with the line and point data, creates the 3D plot and initializes the
+        animation object.
+        """
         # Define the points on the line
         self.a = [0, 0, -.5]
         self.b = [8.2, 0, -.5]
@@ -37,12 +41,10 @@ class LinePlotter:
         # Plot the blue dot at (0,0,0)
         self.ax.scatter(0, 0, 0, color='blue')
 
-        # Set the plot limits
+        # Set the plot limits and labels
         self.ax.set_xlim3d(0, 8.2)
         self.ax.set_ylim3d(-1, 1)
         self.ax.set_zlim3d(-2, 7)
-
-        # Set the plot labels
         self.ax.set_xlabel('X axis')
         self.ax.set_ylabel('Y axis')
         self.ax.set_zlabel('Z axis')
@@ -50,12 +52,17 @@ class LinePlotter:
         # Initialize animation object
         self.animation = None
 
-    def update_point(self, i):
+    def update_point(self, frame, event):
+        """
+        Updates the position of the point on the plot and sets the flag for proximity to line based on the point's
+        distance from the line.
+
+        :param frame: unused animation frame parameter
+        :param event: unused event parameter
+        :return: the point on the plot
+        """
         # Generate a new position for the point
-        # Use the current position of the point
         p = self.p0
-        # Example of circular motion
-        # p = [5 + 3*np.sin(i/10), 1 + np.cos(i/10), 1 + np.sin(i/10)]
 
         # Update the position of the point
         self.point.set_data(np.array([p[0], p[1]]))
@@ -72,15 +79,21 @@ class LinePlotter:
         else:
             self.closeToLine = False
 
-        # Return the point
+        # Return the point for animation
         return self.point,
 
     def start_animation(self):
-        # Create an animation
+        """
+        Initializes and starts the animation of the point moving on the line
+        """
+        # Create the animation object
         self.animation = animation.FuncAnimation(
-            self.fig, self.update_point, frames=np.arange(0, 200, 1), interval=50, blit=True)
+            self.fig, self.update_point, frames=np.arange(0, 200, 1), interval=50, blit=True, fargs=(None,))
 
     def stop_animation(self):
-        # Stop the animation
+        """
+        Stops the animation
+        """
+        # If the animation is running, stop it
         if self.animation:
             self.animation.event_source.stop()
